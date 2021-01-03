@@ -1,0 +1,46 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="js/ExpantaNum.js"></script>
+    <script src="js/saves.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/v.js"></script>
+
+    <title>Incremental Mass</title>
+</head>
+<body onload="loadGame()">
+    <div id='app'>
+        You pushed <h2>{{ formatMass(player.mass) }}</h2><br>
+        (+{{ formatMass(FUNCS.gainMass()) }}/s)<br>
+        Mass capacity is <h2>{{ formatMass(FUNCS.getMaxMass()) }}</h2><br><br>
+        Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
+        Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br><br>
+        <div class="table_center" v-if="player.rank.gte(1)">
+            <div style="width: 40%;">
+                <h2>Milestones</h2><br>
+                <div v-for='x in MILESTONES.rank.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.rank[x].can()">
+                    Rank {{ format(MILESTONES.rank[x].req(), 0) }}: {{ MILESTONES.rank[x].desc() }}
+                </div><br>
+                <div v-for='x in MILESTONES.tier.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.tier[x].can()">
+                    Tier {{ format(MILESTONES.tier[x].req(), 0) }}: {{ MILESTONES.tier[x].desc() }}
+                </div><br>
+            </div><div style="width: 40%;">
+                <h2>Upgrades</h2><br>
+                <div class="table_center">
+                    <div v-for='x in UPGS.mass.cols' class="upgrade" v-if="UPGS.mass[x].unl()" v-bind:class="{closed: !UPGS.mass[x].can()}" v-on:click="UPGS.buy('mass', x)">
+                        <div style="height: 70px;">
+                            {{ UPGS.mass[x].desc() }}
+                        </div>
+                        Cost: {{ formatMass(UPGS.mass[x].cost()) }}
+                        <span v-if="UPGS.mass[x].effect"><br>Currently: {{ UPGS.mass[x].effDesc() }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

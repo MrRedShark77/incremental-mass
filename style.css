@@ -1,0 +1,52 @@
+* {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    table-align: center;
+	text-align: center;
+}
+
+body {
+    color: white;
+    text-shadow: 0px 0px 7px white;
+    background-color: black;
+	overflow-x: hidden;
+	font-size: 14px;
+}
+
+table, tr {
+    display: flex;
+    justify-content: center;
+}
+
+button {
+    border: solid 3px black;
+    background-color: white;
+    font-size: 14px;
+	cursor: pointer;
+}
+
+h1, h2 {
+    display: inline;
+    font-size: 20px;
+}
+
+.table_center {
+    display: flex;
+    justify-content: center;
+    flex-flow: row wrap;
+}
+
+.closed {
+    background-color: gray;
+    cursor: default;
+}
+
+.upgrade {
+    width: 250px;
+    height: 120px;
+    border: solid 3px white;
+    cursor: pointer;
+}
+
+.upgrade.closed {
+    background-color: darkred;
+}
