@@ -10,6 +10,8 @@ function loadVue() {
 			FUNCS,
 			UPGS,
 			MILESTONES,
+			TABS,
+			ACHIEVEMENTS,
         }
 	})
 }

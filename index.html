@@ -14,32 +14,71 @@
 </head>
 <body onload="loadGame()">
     <div id='app'>
-        You pushed <h2>{{ formatMass(player.mass) }}</h2><br>
-        (+{{ formatMass(FUNCS.gainMass()) }}/s)<br>
-        Mass capacity is <h2>{{ formatMass(FUNCS.getMaxMass()) }}</h2><br><br>
-        Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
-        Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br><br>
-        <div class="table_center" v-if="player.rank.gte(1)">
-            <div style="width: 40%;">
-                <h2>Milestones</h2><br>
-                <div v-for='x in MILESTONES.rank.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.rank[x].can()">
-                    Rank {{ format(MILESTONES.rank[x].req(), 0) }}: {{ MILESTONES.rank[x].desc() }}
-                </div><br>
-                <div v-for='x in MILESTONES.tier.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.tier[x].can()">
-                    Tier {{ format(MILESTONES.tier[x].req(), 0) }}: {{ MILESTONES.tier[x].desc() }}
-                </div><br>
-            </div><div style="width: 40%;">
-                <h2>Upgrades</h2><br>
-                <div class="table_center">
-                    <div v-for='x in UPGS.mass.cols' class="upgrade" v-if="UPGS.mass[x].unl()" v-bind:class="{closed: !UPGS.mass[x].can()}" v-on:click="UPGS.buy('mass', x)">
-                        <div style="height: 70px;">
-                            {{ UPGS.mass[x].desc() }}
+        <div style="height: 120px">
+            You pushed <h2>{{ formatMass(player.mass) }}</h2><br>
+            (+{{ formatMass(FUNCS.gainMass()) }}/s)<br>
+            Mass capacity is <h2>{{ formatMass(FUNCS.getMaxMass()) }}</h2><br><br>
+        </div>
+        <div class="table_center">
+            <div v-for='x in TABS[1]' v-if='x.unl()'>
+                <button v-on:click="FUNCS.chTabs(0, TABS[1].indexOf(x))">{{ x.id }}</button>
+            </div>
+        </div><br>
+        <div v-if='player.tabs[0] == 0'>
+            Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
+            Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br><br>
+            <div class="table_center" v-if="player.rank.gte(1)">
+                <div style="width: 40%;">
+                    <h2>Milestones</h2><br>
+                    <div v-for='x in MILESTONES.rank.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.rank[x].can()">
+                        Rank {{ format(MILESTONES.rank[x].req(), 0) }}: {{ MILESTONES.rank[x].desc() }}
+                    </div><br>
+                    <div v-for='x in MILESTONES.tier.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.tier[x].can()">
+                        Tier {{ format(MILESTONES.tier[x].req(), 0) }}: {{ MILESTONES.tier[x].desc() }}
+                    </div><br>
+                </div><div style="width: 40%;">
+                    <h2>Upgrades</h2><br>
+                    <div class="table_center">
+                        <div v-for='x in UPGS.mass.cols' class="upgrade" v-if="UPGS.mass[x].unl()" v-bind:class="{closed: !UPGS.mass[x].can()}" v-on:click="UPGS.buy('mass', x)">
+                            <div style="height: 70px;">
+                                {{ UPGS.mass[x].desc() }}
+                            </div>
+                            Cost: {{ formatMass(UPGS.mass[x].cost()) }}<br>
+                            Level {{ format(FUNCS.hasUpgrade('mass', x), 0) }}
+                            <span v-if="UPGS.mass[x].effect"><br>Currently: {{ UPGS.mass[x].effDesc() }}</span>
                         </div>
-                        Cost: {{ formatMass(UPGS.mass[x].cost()) }}
-                        <span v-if="UPGS.mass[x].effect"><br>Currently: {{ UPGS.mass[x].effDesc() }}</span>
                     </div>
                 </div>
             </div>
+        </div><div v-if='player.tabs[0] == 1'>
+            <button onclick="save()">Save</button>
+            <button onclick="if (confirm('You wanted to RESET your progress to new game?')) {wipe(); location.reload()}">WIPE</button>
+            <button onclick="exporty()">Export</button>
+            <button onclick="importy()">Import</button>
+        </div><div v-if='player.tabs[0] == 2'>
+            <div class="table_center" v-for='r in ACHIEVEMENTS.rows'>
+                <div v-for='c in ACHIEVEMENTS.cols' v-bind:tooltip='ACHIEVEMENTS[r*10+c].desc()' v-if="ACHIEVEMENTS[r*10+c] != undefined" class="achi" v-bind:class='{unlocked: player.achs.includes(r*10+c)}'>
+                    <b>{{ ACHIEVEMENTS[10*r+c].title }}</b>
+                </div>
+            </div>
+        </div><div v-if='player.tabs[0] == 3'>
+            You have <h2>{{ format(player.gears, 1) }}</h2> gears, which has generated {{ format(FUNCS.getGears(), 1) }}/s (based on unspent mass)<br><br>
+            <div v-for='r in UPGS.gears.rows' class="table_center">
+                <div v-for='c in UPGS.gears.cols' class="upgrade" v-if="UPGS.gears[r*10+c].unl()" v-bind:class="{closed: !UPGS.gears[r*10+c].can() && !player.upgs.gears.includes(r*10+c), unlocked: player.upgs.gears.includes(r*10+c)}" v-on:click="UPGS.buy('gears', r*10+c)">
+                    <div style="height: 70px;">
+                        {{ UPGS.gears[r*10+c].desc() }}
+                    </div>
+                    Cost: {{ format(UPGS.gears[r*10+c].cost(), 0) }} gears
+                    <span v-if="UPGS.gears[r*10+c].effect"><br>Currently: {{ UPGS.gears[r*10+c].effDesc() }}</span>
+                </div>
+            </div><br>
+            <div v-if="player.upgs.gears.includes(11)">Auto-buy mass upgrades: <input type="checkbox" v-model="player.automators.mass_upgs"></div>
+            <div v-if="player.upgs.gears.includes(12)">Auto-rank: <input type="checkbox" v-model="player.automators.rank"></div>
+            <div v-if="player.upgs.gears.includes(13)">Auto-tier: <input type="checkbox" v-model="player.automators.tier"></div>
+        </div><div v-if='player.tabs[0] == 4'>
+            <button class="prestige_reset" onclick="FUNCS.gains.rage_powers.reset()" v-bind:class="{closed: !FUNCS.gains.rage_powers.canReset()}">Reset for<br><b>{{ format(FUNCS.gains.rage_powers.points(), 0) }}</b><br>Rage Powers</button><br><br>
+            You have <h2>{{ format(player.rage_powers, 0) }}</h2> Rage Powers, which multiples mass gain based on unspent mass: log10(x+1)^{{ format(FUNCS.gains.rage_powers.effect().pow) }}<br>
+            Currently: x{{ format(FUNCS.gains.rage_powers.effect().mul) }}
         </div>
     </div>
 </body>
