@@ -13,12 +13,16 @@ const TABS = {
 }
 
 const FUNCS = {
+    config: {
+        maxMilestones: 2,
+    },
     gainMass() {
         let gain = E(1)
         if (FUNCS.hasBuyed('mass', 1)) gain = gain.add(UPGS.mass[1].effect())
         if (player.achs.includes(13)) gain = gain.mul(2)
         if (player.achs.includes(22)) gain = gain.mul(2)
         if (player.achs.includes(32)) gain = gain.mul(3)
+        if (player.achs.includes(42)) gain = gain.mul(4)
         if (MILESTONES.rank[6].can()) gain = gain.mul(4)
         if (MILESTONES.rank[8].can()) gain = gain.mul(5)
         if (player.unlocked.includes('rage_powers')) gain = gain.mul(FUNCS.gains.rage_powers.effect().mul)
@@ -28,9 +32,10 @@ const FUNCS = {
     getGears() {
         let gain = player.mass.add(1).log10().pow(3/4)
         if (player.achs.includes(14)) gain = gain.mul(3)
+        if (player.achs.includes(51)) gain = gain.pow(2)
         return gain
     },
-    getMaxMass() { return E(10).pow(player.rank.sub(1).pow(1.5)
+    getMaxMass() { return E(10).pow(player.rank.sub(1).sub(player.upgs.rage_powers.includes(13)?UPGS.rage_powers[13].effect():0).max(0).pow(1.5)
         .mul(MILESTONES.tier[1].can()?0.8:1)
         .add(1)) },
     rank: {
@@ -74,17 +79,36 @@ const FUNCS = {
     getUnlock(id) { if (!player.unlocked.includes(id)) player.unlocked.push(id) },
     unlockAch(id) { if (!player.achs.includes(id)) player.achs.push(id) },
     unlockes: {
-        'automators': _=>{ return player.mass.gte(1e15) },
-        'rage_powers': _=>{ return player.mass.gte(1.619e24) },
+        'automators': {
+            req() { return E(1e15) },
+            can() { return player.mass.gte(this.req()) },
+            dis() { return formatMass(this.req()) },
+            desc: `Automators`,
+        },
+        'rage_powers': {
+            req() { return E(1.619e24) },
+            can() { return player.mass.gte(this.req()) },
+            dis() { return formatMass(this.req()) },
+            desc: `Rage Powers`,
+        },
     },
     gains: {
         rage_powers: {
-            points(){ return player.mass.div(1.619e23).add(1).log10().pow(2).floor() },
+            points(){
+                let gain = player.mass.div(1.619e23).add(1).log10().pow(2)
+                if (player.upgs.rage_powers.includes(11)) gain = gain.mul(UPGS.rage_powers[11].effect())
+                if (player.achs.includes(33)) gain = gain.mul(2)
+                return gain.floor()
+            },
             effect(){
                 let eff = {}
+
                 eff.pow = player.rage_powers.add(1).log10().mul(2)
                 if (eff.pow.gte(3)) eff.pow = eff.pow.sub(3).pow(3/4).add(3)
+                if (player.upgs.rage_powers.includes(12)) eff.pow = eff.pow.mul(1.15)
+
                 eff.mul = player.mass.add(1).log10().add(1).pow(eff.pow)
+
                 return eff
             },
             canReset(){ return this.points().gte(1) },
@@ -136,14 +160,14 @@ const UPGS = {
             unl() { return MILESTONES.rank[2].can() },
             desc() { return 'Multiples mass upgrade 1 effect by '+format(
                     E(1.5).pow(FUNCS.hasBuyed('mass', 3)?UPGS.mass[3].effect():1)
-                    .mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(2/5):1)
+                    .mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1)
                     .mul(MILESTONES.tier[2].can()?FUNCS.hasUpgrade('mass', 2).div(5).add(1):1)
                     , 2)+' (additive)' },
             cost(x=FUNCS.hasUpgrade('mass', 2)) { return E(5).mul(E(MILESTONES.rank[3].can()?0.9:1).sub(MILESTONES.tier[3].can()?0.2:0)).pow(x).mul(100) },
             can() { return player.mass.gte(this.cost()) },
             effect() {
                 let eff = FUNCS.hasUpgrade('mass', 2).mul(E(1.5).pow(FUNCS.hasBuyed('mass', 3)?UPGS.mass[3].effect():1)
-                .mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(2/5):1)
+                .mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1)
                 .mul(MILESTONES.tier[2].can()?FUNCS.hasUpgrade('mass', 2).div(5).add(1):1)).add(1)
                 return eff
             },
@@ -154,13 +178,13 @@ const UPGS = {
         },
         3: {
             unl() { return MILESTONES.rank[3].can() },
-            desc() { return 'Raises mass upgrade 2 effect by '+format(E(MILESTONES.rank[5].can()?player.rank.add(1).pow(2/5):1), 2)+' (additive)' },
+            desc() { return 'Raises mass upgrade 2 effect by '+format(E(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1), 2)+' (additive)' },
             cost(x=FUNCS.hasUpgrade('mass', 3)) { return E(10).mul(E(MILESTONES.rank[7].can()?0.75:1).sub(MILESTONES.tier[3].can()?0.2:0)).pow(x).mul(1000) },
             can() { return player.mass.gte(this.cost()) },
             effect() {
                 let lvl = FUNCS.hasUpgrade('mass', 3)
-                if (lvl.gte(10)) lvl = lvl.sub(10).pow(3/4).add(10)
-                return lvl.add(1).mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(2/5):1)
+                if (lvl.gte(10)) lvl = lvl.sub(10).pow(MILESTONES.rank[10].can()?0.775:3/4).add(10)
+                return lvl.add(1).add(MILESTONES.tier[4].can()?player.rank.pow(0.525):0).mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1)
             },
             effDesc(x=this.effect()) { return '^'+format(x,2) },
             bulk(){
@@ -212,6 +236,42 @@ const UPGS = {
             can() { return player.gears.gte(this.cost()) },
         },
     },
+    rage_powers: {
+        name: 'rage_powers',
+        type: 'normal',
+        res: 'rage_powers',
+
+        cols: 3,
+        rows: 1,
+        11: {
+            unl() { return player.unlocked.includes('rage_powers') && player.achs.includes(24) },
+            desc() { return 'Gain more RP based on unspent gears.' },
+            cost() { return E(1500) },
+            can() { return player.rage_powers.gte(this.cost()) },
+            effect() {
+                let eff = player.gears.add(1).log10().add(1).pow(1/2)
+                return eff
+            },
+            effDesc(x=this.effect()) { return format(x,2)+'x' },
+        },
+        12: {
+            unl() { return player.unlocked.includes('rage_powers') && player.achs.includes(24) },
+            desc() { return 'Rage Powers are 15% stronger.' },
+            cost() { return E(15000) },
+            can() { return player.rage_powers.gte(this.cost()) },
+        },
+        13: {
+            unl() { return player.unlocked.includes('rage_powers') && player.achs.includes(24) },
+            desc() { return 'Subtract rank requirement based on unspent RP.' },
+            cost() { return E(60000) },
+            can() { return player.rage_powers.gte(this.cost()) },
+            effect() {
+                let eff = player.rage_powers.add(1).log10().div(6.5).add(.1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return '-'+format(x) },
+        },
+    },
     buy(name, id) {
         let cost = UPGS[name][id].cost()
         if (player[UPGS[name].res].gte(cost) && (UPGS[name].type == 'normal'?!player.upgs[name].includes(id):true)) {
@@ -240,7 +300,7 @@ const UPGS = {
 
 const MILESTONES = {
     rank: {
-        rows: 8,
+        rows: 10,
         1: {
             desc() { return 'Unlock new upgrade.' },
             req() { return E(2) },
@@ -281,9 +341,19 @@ const MILESTONES = {
             req() { return E(17) },
             can() { return player.rank.gte(this.req()) },
         },
+        9: {
+            desc() { return 'Rank 6 effect is stronger.' },
+            req() { return E(20) },
+            can() { return player.rank.gte(this.req()) },
+        },
+        10: {
+            desc() { return 'Mass upgrade 3 softcapped is weaker.' },
+            req() { return E(24) },
+            can() { return player.rank.gte(this.req()) },
+        },
     },
     tier: {
-        rows: 3,
+        rows: 4,
         1: {
             desc() { return 'Reduce rank reqirements by 20%.' },
             req() { return E(2) },
@@ -299,12 +369,17 @@ const MILESTONES = {
             req() { return E(4) },
             can() { return player.tier.gte(this.req()) },
         },
+        4: {
+            desc() { return 'Gain free mass upgrade 3 levels based on ranks.' },
+            req() { return E(5) },
+            can() { return player.tier.gte(this.req()) },
+        },
     },
 }
 
 const ACHIEVEMENTS = {
     cols: 4,
-    rows: 4,
+    rows: 5,
     11: {
         title: 'First time',
         desc() { return `Push ${formatMass('100')}.` },
@@ -340,6 +415,11 @@ const ACHIEVEMENTS = {
         desc() { return `Reach Tier 3.` },
         can() { return player.tier.gte(3) },
     },
+    24: {
+        title: 'RAGEPUSHER',
+        desc() { return `Gain ${format(1000)} Rage Powers. Reward: Unlock new Rage Power upgrades.` },
+        can() { return player.rage_powers.gte(1000) },
+    },
     31: {
         title: 'Highest mountain',
         desc() { return `Push ${formatMass('1.619e20')}.` },
@@ -348,12 +428,27 @@ const ACHIEVEMENTS = {
     32: {
         title: 'Rankerer',
         desc() { return `Reach Rank 15. Reward: Triple mass gain.` },
-        can() { return player.rank.gte(10) },
+        can() { return player.rank.gte(15) },
+    },
+    33: {
+        title: 'Tierer',
+        desc() { return `Reach Tier 5. Reward: Double RP gain.` },
+        can() { return player.tier.gte(5) },
     },
     41: {
         title: 'UY Scuti',
         desc() { return `Push ${formatMass('1.989e34')}.` },
         can() { return player.mass.gte(1.989e34) },
+    },
+    42: {
+        title: 'Rankest',
+        desc() { return `Reach Rank 20. Reward: Quadruple mass gain.` },
+        can() { return player.rank.gte(20) },
+    },
+    51: {
+        title: 'Lets go, Universe!',
+        desc() { return `Push ${formatMass('1.5e56')}. Reward: Square gear production.` },
+        can() { return player.mass.gte(1.5e56) },
     },
 }
 

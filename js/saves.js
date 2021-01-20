@@ -11,7 +11,10 @@ function calc(dt) {
     if (player.mass.add(FUNCS.gainMass().mul(dt/1000)).gte(FUNCS.getMaxMass())) {
         player.mass = FUNCS.getMaxMass()
     } else player.mass = player.mass.add(FUNCS.gainMass().mul(dt/1000))
-    for (let i = 0; i < Object.keys(FUNCS.unlockes).length; i++) if (FUNCS.unlockes[Object.keys(FUNCS.unlockes)[i]]()) FUNCS.getUnlock(Object.keys(FUNCS.unlockes)[i])
+    for (let i = 0; i < Object.keys(FUNCS.unlockes).length; i++) if (FUNCS.unlockes[Object.keys(FUNCS.unlockes)[i]].can()) {
+        FUNCS.getUnlock(Object.keys(FUNCS.unlockes)[i])
+        if (player.unlocks < i+1) player.unlocks = i+1
+    }
     for (let r = 1; r <= ACHIEVEMENTS.rows; r++) for (let c = 1; c <= ACHIEVEMENTS.cols; c++) if (ACHIEVEMENTS[r*10+c] != undefined) if (ACHIEVEMENTS[r*10+c].can()) FUNCS.unlockAch(r*10+c)
     if (player.unlocked.includes('automators')) player.gears = player.gears.add(FUNCS.getGears().mul(dt/1000))
     if (player.automators.mass_upgs && player.upgs.gears.includes(11)) for (let x = 1; x <= UPGS.mass.cols; x++) if (UPGS.mass[x].unl()) {
@@ -45,6 +48,7 @@ function wipe() {
         },
         gears: E(0),
         rage_powers: E(0),
+        unlocks: 0,
     }
 }
 
@@ -99,6 +103,7 @@ function loadPlayer(load) {
     if (load.achs != undefined) player.achs = load.achs
     if (load.gears != undefined) player.gears = ex(load.gears)
     if (load.rage_powers != undefined) player.rage_powers = ex(load.rage_powers)
+    if (load.unlocks != undefined) player.unlocks = load.unlocks
 }
 
 function loadGame() {

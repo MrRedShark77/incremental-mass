@@ -14,6 +14,10 @@
 </head>
 <body onload="loadGame()">
     <div id='app'>
+        <div style="height: 30px">
+            <span v-if='FUNCS.config.maxMilestones > player.unlocks'>Unlock: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].desc }}. Requires: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].dis() }}</span>
+            <span v-if='player.unlocks >= FUNCS.config.maxMilestones'>All Features unlocked!</span>
+        </div>
         <div style="height: 120px">
             You pushed <h2>{{ formatMass(player.mass) }}</h2><br>
             (+{{ formatMass(FUNCS.gainMass()) }}/s)<br>
@@ -78,7 +82,16 @@
         </div><div v-if='player.tabs[0] == 4'>
             <button class="prestige_reset" onclick="FUNCS.gains.rage_powers.reset()" v-bind:class="{closed: !FUNCS.gains.rage_powers.canReset()}">Reset for<br><b>{{ format(FUNCS.gains.rage_powers.points(), 0) }}</b><br>Rage Powers</button><br><br>
             You have <h2>{{ format(player.rage_powers, 0) }}</h2> Rage Powers, which multiples mass gain based on unspent mass: log10(x+1)^{{ format(FUNCS.gains.rage_powers.effect().pow) }}<br>
-            Currently: x{{ format(FUNCS.gains.rage_powers.effect().mul) }}
+            Currently: x{{ format(FUNCS.gains.rage_powers.effect().mul) }}<br><br>
+            <div v-for='r in UPGS.rage_powers.rows' class="table_center">
+                <div v-for='c in UPGS.rage_powers.cols' class="upgrade" v-if="UPGS.rage_powers[r*10+c].unl()" v-bind:class="{closed: !UPGS.rage_powers[r*10+c].can() && !player.upgs.rage_powers.includes(r*10+c), unlocked: player.upgs.rage_powers.includes(r*10+c)}" v-on:click="UPGS.buy('rage_powers', r*10+c)">
+                    <div style="height: 70px;">
+                        {{ UPGS.rage_powers[r*10+c].desc() }}
+                    </div>
+                    Cost: {{ format(UPGS.rage_powers[r*10+c].cost(), 0) }} RP
+                    <span v-if="UPGS.rage_powers[r*10+c].effect"><br>Currently: {{ UPGS.rage_powers[r*10+c].effDesc() }}</span>
+                </div>
+            </div>
         </div>
     </div>
 </body>
