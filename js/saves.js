@@ -8,9 +8,9 @@ function ex(x){
 }
 
 function calc(dt) {
-    if (player.mass.add(FUNCS.gainMass().mul(dt/1000)).gte(FUNCS.getMaxMass())) {
+    if (player.mass.add(FUNCS.gainMass().mul(dt/1000).mul(FUNCS.getMassPower())).gte(FUNCS.getMaxMass())) {
         player.mass = FUNCS.getMaxMass()
-    } else player.mass = player.mass.add(FUNCS.gainMass().mul(dt/1000))
+    } else player.mass = player.mass.add(FUNCS.gainMass().mul(dt/1000).mul(FUNCS.getMassPower()))
     for (let i = 0; i < Object.keys(FUNCS.unlockes).length; i++) if (FUNCS.unlockes[Object.keys(FUNCS.unlockes)[i]].can()) {
         FUNCS.getUnlock(Object.keys(FUNCS.unlockes)[i])
         if (player.unlocks < i+1) player.unlocks = i+1
@@ -26,6 +26,7 @@ function calc(dt) {
     }
     if (player.automators.rank && player.upgs.gears.includes(12)) FUNCS.rank.reset()
     if (player.automators.tier && player.upgs.gears.includes(13)) FUNCS.tier.reset()
+    if (MILESTONES.dark_matter[1].can()) player.black_hole.stored_mass = player.black_hole.stored_mass.add(FUNCS.gains.black_hole.storedGain().mul(dt/1000))
 }
 
 function wipe() {
@@ -38,7 +39,7 @@ function wipe() {
             gears: [],
             rage_powers: [],
         },
-        tabs: [0],
+        tabs: [0,0],
         unlocked: [],
         achs: [],
         automators: {
@@ -49,6 +50,12 @@ function wipe() {
         gears: E(0),
         rage_powers: E(0),
         unlocks: 0,
+        black_hole: {
+            dm: E(0),
+            total_dm: E(0),
+            stored_mass: E(0),
+            bh_activated: false,
+        },
     }
 }
 
@@ -97,6 +104,14 @@ function loadPlayer(load) {
         p_auto.mass_upgs = l_auto.mass_upgs
         p_auto.rank = l_auto.rank
         p_auto.tier = l_auto.tier
+    }
+
+    if (load.black_hole != undefined) {
+        let p_bh = player.black_hole, l_bh = load.black_hole
+        p_bh.dm = ex(l_bh.dm)
+        p_bh.total_dm = ex(l_bh.total_dm)
+        p_bh.stored_mass = ex(l_bh.stored_mass)
+        p_bh.bh_activated = l_bh.bh_activated
     }
 
     if (load.unlocked != undefined) player.unlocked = load.unlocked

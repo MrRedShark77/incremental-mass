@@ -17,6 +17,8 @@
         <div style="height: 30px">
             <span v-if='FUNCS.config.maxMilestones > player.unlocks'>Unlock: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].desc }}. Requires: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].dis() }}</span>
             <span v-if='player.unlocks >= FUNCS.config.maxMilestones'>All Features unlocked!</span>
+        </div><div style="height: 30px">
+            <span v-if='player.unlocked.includes("black_hole")'>Mass Power: x{{ format(FUNCS.getMassPower()) }}</span>
         </div>
         <div style="height: 120px">
             You pushed <h2>{{ formatMass(player.mass) }}</h2><br>
@@ -25,7 +27,7 @@
         </div>
         <div class="table_center">
             <div v-for='x in TABS[1]' v-if='x.unl()'>
-                <button v-on:click="FUNCS.chTabs(0, TABS[1].indexOf(x))">{{ x.id }}</button>
+                <button v-on:click="FUNCS.chTabs(0, TABS[1].indexOf(x))" v-bind:class="{[x.style]: true}">{{ x.id }}</button>
             </div>
         </div><br>
         <div v-if='player.tabs[0] == 0'>
@@ -80,7 +82,7 @@
             <div v-if="player.upgs.gears.includes(12)">Auto-rank: <input type="checkbox" v-model="player.automators.rank"></div>
             <div v-if="player.upgs.gears.includes(13)">Auto-tier: <input type="checkbox" v-model="player.automators.tier"></div>
         </div><div v-if='player.tabs[0] == 4'>
-            <button class="prestige_reset" onclick="FUNCS.gains.rage_powers.reset()" v-bind:class="{closed: !FUNCS.gains.rage_powers.canReset()}">Reset for<br><b>{{ format(FUNCS.gains.rage_powers.points(), 0) }}</b><br>Rage Powers</button><br><br>
+            <button class="prestige_reset rage_powers_tab" onclick="FUNCS.gains.rage_powers.reset()" v-bind:class="{closed: !FUNCS.gains.rage_powers.canReset()}">Reset for<br><b>{{ format(FUNCS.gains.rage_powers.points(), 0) }}</b><br>Rage Powers</button><br><br>
             You have <h2>{{ format(player.rage_powers, 0) }}</h2> Rage Powers, which multiples mass gain based on unspent mass: log10(x+1)^{{ format(FUNCS.gains.rage_powers.effect().pow) }}<br>
             Currently: x{{ format(FUNCS.gains.rage_powers.effect().mul) }}<br><br>
             <div v-for='r in UPGS.rage_powers.rows' class="table_center">
@@ -90,6 +92,35 @@
                     </div>
                     Cost: {{ format(UPGS.rage_powers[r*10+c].cost(), 0) }} RP
                     <span v-if="UPGS.rage_powers[r*10+c].effect"><br>Currently: {{ UPGS.rage_powers[r*10+c].effDesc() }}</span>
+                </div>
+            </div>
+        </div><div v-if='player.tabs[0] == 5'>
+            <button class="prestige_reset black_hole_tab" onclick="FUNCS.gains.black_hole.reset()" v-bind:class="{closed: !FUNCS.gains.black_hole.canReset()}">Transform RP to<br><b>{{ format(FUNCS.gains.black_hole.points(), 0) }}</b><br>Dark Matters</button><br><br>
+            You have <h2>{{ format(player.black_hole.dm, 0) }}</h2> Dark Matters, which multiples RP gain by {{ format(FUNCS.gains.black_hole.effect().mul) }}<br><br>
+            <div class="table_center">
+                <div v-for='x in TABS[2]["Black Hole"]' v-if='x.unl()'>
+                    <button v-on:click="FUNCS.chTabs(1, TABS[2]['Black Hole'].indexOf(x))" v-bind:class="{[x.style]: true}">{{ x.id }}</button>
+                </div>
+            </div><br>
+            <div v-if='player.tabs[1] == 0'>
+                You have <b>{{ format(player.black_hole.total_dm, 0) }}</b> total Dark Matters<br><br>
+                <div class="table_center">
+                    <div v-for='x in MILESTONES.dark_matter.rows' class="milestone_dm" v-bind:class="{can: MILESTONES.dark_matter[x].can()}">
+                        <br><b>{{ format(MILESTONES.dark_matter[x].req(), 0) }}</b> Dark Matters<br><br>{{ MILESTONES.dark_matter[x].desc() }}
+                    </div>
+                </div>
+            </div><div v-if='player.tabs[1] == 1'>
+                <button class="prestige_reset black_hole_tab" v-bind:tooltip="'If activates, the mass and RP gain, RP effect is raised by 1/3. When activates, reset like for Dark Matters and start to generate stored mass in Black Hole.'" onclick="FUNCS.gains.black_hole.execute()">{{ FUNCS.msgs.execute() }}</button><br><br>
+                <div class="table_center">
+                    <div class="black_hole">
+                        <div style="top: 96px; position: relative; font-size: 18px;">
+                            You have<br><h2 style="font-size: 24px;">{{ formatMass(player.black_hole.stored_mass) }}</h2><br>
+                            (+{{ formatMass(FUNCS.gains.black_hole.storedGain()) }}/s)<br>
+                            stored mass in Black Hole.<br>
+                            Which multiples mass power by<br>
+                            <h2 style="font-size: 24px;">{{ format(FUNCS.gains.black_hole.effect().pow) }}</h2>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -73,6 +73,56 @@ h1, h2 {
 	height: 75px;
 }
 
+.normal_tab {
+	background-color: white;
+}
+
+.rage_powers_tab {
+	background-color: #dd0000;
+}
+
+.black_hole_tab {
+	background-color: black;
+	border-color: white;
+	color: white;
+}
+
+.milestone_dm {
+	border: solid 3px white;
+	width: 150px;
+	height: 150px;
+	border-radius: 10px;
+	font-size: 12px;
+	margin: 3px;
+}
+
+.milestone_dm.can {
+	background-color: white;
+	color: black;
+}
+
+.black_hole {
+	width: 350px;
+	height: 350px;
+	border-radius: 50%;
+	border: solid 10px gold;
+	animation: black_hole_size 8s infinite;
+	background-color: black;
+	top: 50px;
+	position: relative;
+}
+
+@keyframes black_hole_size {
+	0%, 100% {
+		top: 50px;
+		border: solid 10px gold;;
+	}
+	50% {
+		top: 35px;
+		border: solid 25px gold;;
+	}
+}
+
 [tooltip] {
 	position: relative;
 	z-index: 2;
