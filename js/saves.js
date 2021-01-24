@@ -27,6 +27,7 @@ function calc(dt) {
     if (player.automators.rank && player.upgs.gears.includes(12)) FUNCS.rank.reset()
     if (player.automators.tier && player.upgs.gears.includes(13)) FUNCS.tier.reset()
     if (MILESTONES.dark_matter[1].can()) player.black_hole.stored_mass = player.black_hole.stored_mass.add(FUNCS.gains.black_hole.storedGain().mul(dt/1000))
+    if (MILESTONES.dark_matter[5].can()) player.rage_powers = player.rage_powers.add(FUNCS.gains.rage_powers.points().mul(dt/10000))
 }
 
 function wipe() {
@@ -38,6 +39,7 @@ function wipe() {
             mass: {},
             gears: [],
             rage_powers: [],
+            dm: {},
         },
         tabs: [0,0],
         unlocked: [],
@@ -98,6 +100,7 @@ function loadPlayer(load) {
     for (let i = 0; i < Object.keys(l_upg.mass).length; i++) p_upg.mass[Object.keys(l_upg.mass)[i]] = ex(l_upg.mass[Object.keys(l_upg.mass)[i]])
     if (l_upg.gears != undefined) p_upg.gears = l_upg.gears
     if (l_upg.rage_powers != undefined) p_upg.rage_powers = l_upg.rage_powers
+    if (l_upg.dm != undefined) for (let i = 0; i < Object.keys(l_upg.dm).length; i++) p_upg.dm[Object.keys(l_upg.dm)[i]] = ex(l_upg.dm[Object.keys(l_upg.dm)[i]])
 
     if (load.automators != undefined) {
         let p_auto = player.automators, l_auto = load.automators;

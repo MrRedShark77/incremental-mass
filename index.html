@@ -112,13 +112,27 @@
             </div><div v-if='player.tabs[1] == 1'>
                 <button class="prestige_reset black_hole_tab" v-bind:tooltip="'If activates, the mass and RP gain, RP effect is raised by 1/3. When activates, reset like for Dark Matters and start to generate stored mass in Black Hole.'" onclick="FUNCS.gains.black_hole.execute()">{{ FUNCS.msgs.execute() }}</button><br><br>
                 <div class="table_center">
-                    <div class="black_hole">
-                        <div style="top: 96px; position: relative; font-size: 18px;">
-                            You have<br><h2 style="font-size: 24px;">{{ formatMass(player.black_hole.stored_mass) }}</h2><br>
-                            (+{{ formatMass(FUNCS.gains.black_hole.storedGain()) }}/s)<br>
-                            stored mass in Black Hole.<br>
-                            Which multiples mass power by<br>
-                            <h2 style="font-size: 24px;">{{ format(FUNCS.gains.black_hole.effect().pow) }}</h2>
+                    <div style="width: 40%;" class="table_center">
+                        <div class="black_hole">
+                            <div style="top: 100px; position: relative; font-size: 18px;">
+                                You have<br><h2 style="font-size: 22px;">{{ formatMass(player.black_hole.stored_mass) }}</h2><br>
+                                (+{{ formatMass(FUNCS.gains.black_hole.storedGain()) }}/s)<br>
+                                stored mass in Black Hole.<br>
+                                Which multiples mass power by<br>
+                                <h2 style="font-size: 22px;">{{ format(FUNCS.gains.black_hole.effect().pow) }}</h2>
+                            </div>
+                        </div>
+                    </div><div style="width: 40%">
+                        <h2>Upgrades</h2>
+                        <div class="table_center">
+                            <div v-for='x in UPGS.dm.cols' class="upgrade" v-if="UPGS.dm[x].unl()" v-bind:class="{closed: !UPGS.dm[x].can()}" v-on:click="UPGS.buy('dm', x)">
+                                <div style="height: 70px;">
+                                    {{ UPGS.dm[x].desc() }}
+                                </div>
+                                Cost: {{ format(UPGS.dm[x].cost(), 0) }} DM<br>
+                                Level {{ format(FUNCS.hasUpgrade('dm', x), 0) }}
+                                <span v-if="UPGS.dm[x].effect"><br>Currently: {{ UPGS.dm[x].effDesc() }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

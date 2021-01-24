@@ -108,17 +108,17 @@ h1, h2 {
 	border: solid 10px gold;
 	animation: black_hole_size 8s infinite;
 	background-color: black;
-	top: 50px;
+	top: 30px;
 	position: relative;
 }
 
 @keyframes black_hole_size {
 	0%, 100% {
-		top: 50px;
+		top: 30px;
 		border: solid 10px gold;;
 	}
 	50% {
-		top: 35px;
+		top: 15px;
 		border: solid 25px gold;;
 	}
 }
