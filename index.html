@@ -18,6 +18,8 @@
             <span v-if='FUNCS.config.maxMilestones > player.unlocks'>Unlock: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].desc }}. Requires: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].dis() }}</span>
             <span v-if='player.unlocks >= FUNCS.config.maxMilestones'>All Features unlocked!</span>
         </div><div style="height: 30px">
+            <span v-if="player.unlocked.includes('multiverse')">You're currently in Multiverse #1</span>
+        </div><div style="height: 30px">
             <span v-if='player.unlocked.includes("black_hole")'>Mass Power: x{{ format(FUNCS.getMassPower()) }}</span>
         </div>
         <div style="height: 120px">
@@ -136,7 +138,21 @@
                         </div>
                     </div>
                 </div>
+            </div><div v-if='player.tabs[1] == 2'>
+                <button class="prestige_reset" onclick="FUNCS.gains.antidark_matters.reset()" v-bind:class="{closed: !FUNCS.gains.antidark_matters.canReset()}">Transform DM to<br><b>{{ format(FUNCS.gains.antidark_matters.points(), 0) }}</b><br>Anti-Dark Matters</button><br><br>
+                You have <h2>{{ format(player.black_hole.adm, 0) }}</h2> Anti-Dark Matters, which multiples Dark Matters gain by {{ format(FUNCS.gains.antidark_matters.effect().mul) }}<br><br>
+                <div v-for='r in UPGS.adm.rows' class="table_center">
+                    <div v-for='c in UPGS.adm.cols' class="upgrade" v-if="UPGS.adm[r*10+c].unl()" v-bind:class="{closed: !UPGS.adm[r*10+c].can() && !player.upgs.adm.includes(r*10+c), unlocked: player.upgs.adm.includes(r*10+c)}" v-on:click="UPGS.buy('adm', r*10+c)">
+                        <div style="height: 70px;">
+                            {{ UPGS.adm[r*10+c].desc() }}
+                        </div>
+                        Cost: {{ format(UPGS.adm[r*10+c].cost(), 0) }} RP
+                        <span v-if="UPGS.adm[r*10+c].effect"><br>Currently: {{ UPGS.adm[r*10+c].effDesc() }}</span>
+                    </div>
+                </div>
             </div>
+        </div><div v-if='player.tabs[0] == 6'>
+            Coming soon...
         </div>
     </div>
 </body>

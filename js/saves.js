@@ -11,7 +11,7 @@ function calc(dt) {
     if (player.mass.add(FUNCS.gainMass().mul(dt/1000).mul(FUNCS.getMassPower())).gte(FUNCS.getMaxMass())) {
         player.mass = FUNCS.getMaxMass()
     } else player.mass = player.mass.add(FUNCS.gainMass().mul(dt/1000).mul(FUNCS.getMassPower()))
-    for (let i = 0; i < Object.keys(FUNCS.unlockes).length; i++) if (FUNCS.unlockes[Object.keys(FUNCS.unlockes)[i]].can()) {
+    for (let i = 0; i < Object.keys(FUNCS.unlockes).length; i++) if (FUNCS.unlockes[Object.keys(FUNCS.unlockes)[i]].can() && i <= player.unlocks) {
         FUNCS.getUnlock(Object.keys(FUNCS.unlockes)[i])
         if (player.unlocks < i+1) player.unlocks = i+1
     }
@@ -40,6 +40,7 @@ function wipe() {
             gears: [],
             rage_powers: [],
             dm: {},
+            adm: [],
         },
         tabs: [0,0],
         unlocked: [],
@@ -57,6 +58,7 @@ function wipe() {
             total_dm: E(0),
             stored_mass: E(0),
             bh_activated: false,
+            adm: E(0),
         },
     }
 }
@@ -101,6 +103,7 @@ function loadPlayer(load) {
     if (l_upg.gears != undefined) p_upg.gears = l_upg.gears
     if (l_upg.rage_powers != undefined) p_upg.rage_powers = l_upg.rage_powers
     if (l_upg.dm != undefined) for (let i = 0; i < Object.keys(l_upg.dm).length; i++) p_upg.dm[Object.keys(l_upg.dm)[i]] = ex(l_upg.dm[Object.keys(l_upg.dm)[i]])
+    if (l_upg.adm != undefined) p_upg.adm = l_upg.adm
 
     if (load.automators != undefined) {
         let p_auto = player.automators, l_auto = load.automators;
@@ -115,6 +118,7 @@ function loadPlayer(load) {
         p_bh.total_dm = ex(l_bh.total_dm)
         p_bh.stored_mass = ex(l_bh.stored_mass)
         p_bh.bh_activated = l_bh.bh_activated
+        if (l_bh.adm != undefined) p_bh.adm = ex(l_bh.adm)
     }
 
     if (load.unlocked != undefined) player.unlocked = load.unlocked

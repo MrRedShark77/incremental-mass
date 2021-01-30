@@ -87,6 +87,13 @@ h1, h2 {
 	color: white;
 }
 
+.chroma_tab {
+	background-color: black;
+	border-color: #F00;
+	color: #F00;
+	animation: chroma_color 8s infinite linear;
+}
+
 .milestone_dm {
 	border: solid 3px white;
 	width: 150px;
@@ -121,6 +128,39 @@ h1, h2 {
 		top: 15px;
 		border: solid 25px gold;;
 	}
+}
+
+@keyframes chroma_color {
+	0%, 100% {
+		border-color: #F00;
+		color: #F00;
+	}
+	16% {
+		border-color: #FF0;
+		color: #FF0;
+	}
+	33% {
+		border-color: #0F0;
+		color: #0F0;
+	}
+	50% {
+		border-color: #0FF;
+		color: #0FF;
+	}
+	66% {
+		border-color: #00F;
+		color: #00F;
+	}
+	83% {
+		border-color: #F0F;
+		color: #F0F;
+	}
+}
+
+.wb_border {
+	color: black;
+	-webkit-text-stroke: white;
+	-webkit-text-stroke-width: 1px;
 }
 
 [tooltip] {
