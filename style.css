@@ -119,6 +119,25 @@ h1, h2 {
 	position: relative;
 }
 
+.flex_container {
+	margin: 5px;
+	width: 80%;
+	height: 260px;
+	border: 3px solid white;
+	white-space: nowrap;
+	display: flex;
+  	flex-wrap: nowrap; 
+  	overflow: auto;
+}
+
+.flex_item {
+	border: 3px solid white;
+	width: 220px;
+	flex: 0 0 auto;
+	text-shadow: 0px 0px 0px black;
+	white-space: normal;
+}
+
 @keyframes black_hole_size {
 	0%, 100% {
 		top: 30px;

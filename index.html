@@ -18,14 +18,15 @@
             <span v-if='FUNCS.config.maxMilestones > player.unlocks'>Unlock: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].desc }}. Requires: {{ FUNCS.unlockes[Object.keys(FUNCS.unlockes)[player.unlocks]].dis() }}</span>
             <span v-if='player.unlocks >= FUNCS.config.maxMilestones'>All Features unlocked!</span>
         </div><div style="height: 30px">
-            <span v-if="player.unlocked.includes('multiverse')">You're currently in Multiverse #1</span>
+            <span v-if="player.unlocked.includes('multiverse')">You're currently in Multiverse #{{ format(player.multiverse.number, 0) }}</span>
         </div><div style="height: 30px">
             <span v-if='player.unlocked.includes("black_hole")'>Mass Power: x{{ format(FUNCS.getMassPower()) }}</span>
         </div>
         <div style="height: 120px">
             You pushed <h2>{{ formatMass(player.mass) }}</h2><br>
             (+{{ formatMass(FUNCS.gainMass()) }}/s)<br>
-            Mass capacity is <h2>{{ formatMass(FUNCS.getMaxMass()) }}</h2><br><br>
+            Mass capacity is <h2>{{ formatMass(FUNCS.getMaxMass()) }}</h2><br>
+            <span v-if="FUNCS.penaltyMass().gt(1)">Will penalty mass gain by <h2>/{{ format(FUNCS.penaltyMass(), 1) }}</h2></span><br>
         </div>
         <div class="table_center">
             <div v-for='x in TABS[1]' v-if='x.unl()'>
@@ -33,8 +34,11 @@
             </div>
         </div><br>
         <div v-if='player.tabs[0] == 0'>
-            Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
-            Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br><br>
+            <div style="height: 100px">
+                Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
+                Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br>
+                <span>Tetr {{ format(player.tetr, 0) }} <button onclick="FUNCS.tetr.reset()" v-bind:class="{closed: !FUNCS.tetr.can()}">Reach Tier {{ format(FUNCS.tetr.req(), 0) }} for new tetr</button><br><br></span>
+            </div>
             <div class="table_center" v-if="player.rank.gte(1)">
                 <div style="width: 40%;">
                     <h2>Milestones</h2><br>
@@ -43,6 +47,9 @@
                     </div><br>
                     <div v-for='x in MILESTONES.tier.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.tier[x].can()">
                         Tier {{ format(MILESTONES.tier[x].req(), 0) }}: {{ MILESTONES.tier[x].desc() }}
+                    </div><br>
+                    <div v-for='x in MILESTONES.tetr.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.tetr[x].can()">
+                        Tetr {{ format(MILESTONES.tetr[x].req(), 0) }}: {{ MILESTONES.tetr[x].desc() }}
                     </div><br>
                 </div><div style="width: 40%;">
                     <h2>Upgrades</h2><br>
@@ -126,6 +133,7 @@
                         </div>
                     </div><div style="width: 40%">
                         <h2>Upgrades</h2>
+                        <button v-if="MILESTONES.multiverse[1].can()" onclick="UPGS.buyMax('dm')">Buy Max</button><br>
                         <div class="table_center">
                             <div v-for='x in UPGS.dm.cols' class="upgrade" v-if="UPGS.dm[x].unl()" v-bind:class="{closed: !UPGS.dm[x].can()}" v-on:click="UPGS.buy('dm', x)">
                                 <div style="height: 70px;">
@@ -146,13 +154,34 @@
                         <div style="height: 70px;">
                             {{ UPGS.adm[r*10+c].desc() }}
                         </div>
-                        Cost: {{ format(UPGS.adm[r*10+c].cost(), 0) }} ARP
+                        Cost: {{ format(UPGS.adm[r*10+c].cost(), 0) }} ADM
                         <span v-if="UPGS.adm[r*10+c].effect"><br>Currently: {{ UPGS.adm[r*10+c].effDesc() }}</span>
                     </div>
                 </div>
             </div>
         </div><div v-if='player.tabs[0] == 6'>
-            Coming soon...
+            <div style="height: 100px;">
+                <button class="prestige_reset chroma_tab" onclick="FUNCS.multiverse.reset()">{{ FUNCS.msgs.multiverse() }}</button>
+            </div>
+            You're currently in Multiverse #{{ format(player.multiverse.number, 0) }}<br>
+            Mass of Multiverse capacity is <h2>{{ formatMass(FUNCS.multiverse.caps()) }}</h2><br><br>
+            <div class="table_center">
+                <div v-for='x in TABS[2]["Multiverse"]' v-if='x.unl()'>
+                    <button v-on:click="FUNCS.chTabs(1, TABS[2]['Multiverse'].indexOf(x))" v-bind:class="{[x.style]: true}">{{ x.id }}</button>
+                </div>
+            </div><br>
+            <div v-if='player.tabs[1] == 0'>
+                <div class="table_center" style="height: 300px;">
+                    <div class="flex_container">
+                        <div class="flex_item chroma_tab" v-for='x in MILESTONES.multiverse.rows'>
+                            <div style="height: 60px;">
+                                <h2>Multiverse #{{ FUNCS.msgs.secret(format(MILESTONES.multiverse[x].req(), 0), MILESTONES.multiverse[x-1].can()) }}</h2>
+                            </div>
+                            {{ FUNCS.msgs.secret(MILESTONES.multiverse[x].desc(), MILESTONES.multiverse[x-1].can()) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

@@ -35,6 +35,7 @@ function wipe() {
         mass: E(0),
         rank: E(1),
         tier: E(1),
+        tetr: E(1),
         upgs: {
             mass: {},
             gears: [],
@@ -59,6 +60,9 @@ function wipe() {
             stored_mass: E(0),
             bh_activated: false,
             adm: E(0),
+        },
+        multiverse: {
+            number: E(1),
         },
     }
 }
@@ -97,6 +101,7 @@ function loadPlayer(load) {
     player.mass = ex(load.mass)
     player.rank = ex(load.rank)
     player.tier = ex(load.tier)
+    if (load.tetr != undefined) player.tetr = ex(load.tetr)
 
     let p_upg = player.upgs, l_upg = load.upgs;
     for (let i = 0; i < Object.keys(l_upg.mass).length; i++) p_upg.mass[Object.keys(l_upg.mass)[i]] = ex(l_upg.mass[Object.keys(l_upg.mass)[i]])
@@ -119,6 +124,11 @@ function loadPlayer(load) {
         p_bh.stored_mass = ex(l_bh.stored_mass)
         p_bh.bh_activated = l_bh.bh_activated
         if (l_bh.adm != undefined) p_bh.adm = ex(l_bh.adm)
+    }
+
+    if (load.multiverse != undefined) {
+        let pm = player.multiverse, lm = load.multiverse
+        pm.number = ex(lm.number)
     }
 
     if (load.unlocked != undefined) player.unlocked = load.unlocked
