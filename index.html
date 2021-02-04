@@ -37,7 +37,7 @@
             <div style="height: 100px">
                 Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
                 Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br>
-                <span>Tetr {{ format(player.tetr, 0) }} <button onclick="FUNCS.tetr.reset()" v-bind:class="{closed: !FUNCS.tetr.can()}">Reach Tier {{ format(FUNCS.tetr.req(), 0) }} for new tetr</button><br><br></span>
+                <span v-if="MILESTONES.multiverse[1].can()">Tetr {{ format(player.tetr, 0) }} <button onclick="FUNCS.tetr.reset()" v-bind:class="{closed: !FUNCS.tetr.can()}">Reach Tier {{ format(FUNCS.tetr.req(), 0) }} for new tetr</button><br><br></span>
             </div>
             <div class="table_center" v-if="player.rank.gte(1)">
                 <div style="width: 40%;">
