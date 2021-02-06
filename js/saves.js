@@ -8,7 +8,7 @@ function ex(x){
 }
 
 function calc(dt) {
-    if (player.mass.add(FUNCS.gainMass().mul(dt/1000).mul(FUNCS.getMassPower())).gte(FUNCS.getMaxMass())) {
+    if (player.mass.add(FUNCS.gainMass().mul(dt/1000).mul(FUNCS.getMassPower())).gte(FUNCS.getMaxMass()) && !MILESTONES.multiverse[3].can()) {
         player.mass = FUNCS.getMaxMass()
     } else player.mass = player.mass.add(FUNCS.gainMass().mul(dt/1000).mul(FUNCS.getMassPower()))
     for (let i = 0; i < Object.keys(FUNCS.unlockes).length; i++) if (FUNCS.unlockes[Object.keys(FUNCS.unlockes)[i]].can() && i <= player.unlocks) {
@@ -26,8 +26,10 @@ function calc(dt) {
     }
     if (player.automators.rank && player.upgs.gears.includes(12)) FUNCS.rank.reset()
     if (player.automators.tier && player.upgs.gears.includes(13)) FUNCS.tier.reset()
-    if (MILESTONES.dark_matter[1].can()) player.black_hole.stored_mass = player.black_hole.stored_mass.add(FUNCS.gains.black_hole.storedGain().mul(dt/1000))
+    if (player.automators.tetr && player.upgs.gp.includes(12)) FUNCS.tetr.reset()
+    if (MILESTONES.dark_matter[1].can()) player.black_hole.stored_mass = player.black_hole.stored_mass.add(FUNCS.gains.black_hole.storedGain().mul(dt/1000).mul(player.upgs.gp.includes(32)?FUNCS.getMassPower():1))
     if (MILESTONES.dark_matter[5].can()) player.rage_powers = player.rage_powers.add(FUNCS.gains.rage_powers.points().mul(dt/10000))
+    if (MILESTONES.multiverse[2].can()) player.multiverse.gp = player.multiverse.gp.add(FUNCS.gains.gp().mul(dt/1000))
 }
 
 function wipe() {
@@ -42,14 +44,19 @@ function wipe() {
             rage_powers: [],
             dm: {},
             adm: [],
+            gp: [],
         },
         tabs: [0,0],
+        msgs: {
+            gpID: 0,
+        },
         unlocked: [],
         achs: [],
         automators: {
             mass_upgs: false,
             rank: false,
             tier: false,
+            tetr: false,
         },
         gears: E(0),
         rage_powers: E(0),
@@ -63,6 +70,7 @@ function wipe() {
         },
         multiverse: {
             number: E(1),
+            gp: E(0),
         },
     }
 }
@@ -109,12 +117,14 @@ function loadPlayer(load) {
     if (l_upg.rage_powers != undefined) p_upg.rage_powers = l_upg.rage_powers
     if (l_upg.dm != undefined) for (let i = 0; i < Object.keys(l_upg.dm).length; i++) p_upg.dm[Object.keys(l_upg.dm)[i]] = ex(l_upg.dm[Object.keys(l_upg.dm)[i]])
     if (l_upg.adm != undefined) p_upg.adm = l_upg.adm
+    if (l_upg.gp != undefined) p_upg.gp = l_upg.gp
 
     if (load.automators != undefined) {
         let p_auto = player.automators, l_auto = load.automators;
         p_auto.mass_upgs = l_auto.mass_upgs
         p_auto.rank = l_auto.rank
         p_auto.tier = l_auto.tier
+        if (l_auto.tetr != undefined) p_auto.tetr = l_auto.tetr
     }
 
     if (load.black_hole != undefined) {
@@ -129,6 +139,7 @@ function loadPlayer(load) {
     if (load.multiverse != undefined) {
         let pm = player.multiverse, lm = load.multiverse
         pm.number = ex(lm.number)
+        if (lm.gp != undefined) pm.gp = ex(lm.gp)
     }
 
     if (load.unlocked != undefined) player.unlocked = load.unlocked
