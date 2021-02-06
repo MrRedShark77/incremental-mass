@@ -254,6 +254,7 @@ const FUNCS = {
                 let gain = player.mass
                 if (player.achs.includes(43)) gain = gain.mul(2)
                 if (player.achs.includes(53)) gain = gain.mul(3)
+                if (player.achs.includes(55)) gain = gain.mul(5)
                 if (FUNCS.hasBuyed('dm', 1)) gain = gain.mul(UPGS.dm[1].effect())
 
                 if (!player.black_hole.bh_activated) gain = E(0)
@@ -1087,7 +1088,7 @@ const ACHIEVEMENTS = {
     },
     55: {
         title: 'Googol Fat Black Hole',
-        desc() { return `Get ${formatMass(1e100*1.5e56)} of stored mass in Black Hole. Reward: Triple stored mass gain.` },
+        desc() { return `Get ${formatMass(1e100*1.5e56)} of stored mass in Black Hole. Reward: 5x stored mass gain.` },
         can() { return player.black_hole.stored_mass.gte(1e100*1.5e56) },
     },
     61: {
