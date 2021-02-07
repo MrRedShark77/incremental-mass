@@ -26,7 +26,7 @@
             You pushed <h2>{{ formatMass(player.mass) }}</h2><br>
             (+{{ formatMass(FUNCS.gainMass()) }}/s)<br>
             Mass capacity is <h2>{{ formatMass(FUNCS.getMaxMass()) }}</h2><br>
-            <span v-if="FUNCS.penaltyMass().gt(1)">Will penalty mass gain by <h2>/{{ format(FUNCS.penaltyMass(), 1) }}</h2></span><br>
+            <span v-if="FUNCS.penaltyMass().gt(1)">This penalises mass gain by <h2>/{{ format(FUNCS.penaltyMass(), 1) }}</h2></span><br>
         </div>
         <div class="table_center">
             <div v-for='x in TABS[1]' v-if='x.unl()'>
@@ -35,8 +35,8 @@
         </div><br>
         <div v-if='player.tabs[0] == 0'>
             <div style="height: 100px">
-                Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
-                Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br>
+                Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for a new rank</button><br>
+                Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for a new tier</button><br>
                 <span v-if="MILESTONES.multiverse[1].can()">Tetr {{ format(player.tetr, 0) }} <button onclick="FUNCS.tetr.reset()" v-bind:class="{closed: !FUNCS.tetr.can()}">Reach Tier {{ format(FUNCS.tetr.req(), 0) }} for new tetr</button><br><br></span>
             </div>
             <div class="table_center" v-if="player.rank.gte(1)">
@@ -67,7 +67,7 @@
             </div>
         </div><div v-if='player.tabs[0] == 1'>
             <button onclick="save()">Save</button>
-            <button onclick="if (confirm('You wanted to RESET your progress to new game?')) {wipe(); location.reload()}">WIPE</button>
+            <button onclick="if (confirm('Do you want to RESET your progress to a new game?')) {wipe(); location.reload()}">WIPE</button>
             <button onclick="exporty()">Export</button>
             <button onclick="importy()">Import</button>
         </div><div v-if='player.tabs[0] == 2'>
@@ -77,7 +77,7 @@
                 </div>
             </div>
         </div><div v-if='player.tabs[0] == 3'>
-            You have <h2>{{ format(player.gears, 1) }}</h2> gears, which has generated {{ format(FUNCS.getGears(), 1) }}/s (based on unspent mass)<br><br>
+            You have <h2>{{ format(player.gears, 1) }}</h2> gears, which is generated at {{ format(FUNCS.getGears(), 1) }}/s (based on unspent mass)<br><br>
             <div v-for='r in UPGS.gears.rows' class="table_center">
                 <div v-for='c in UPGS.gears.cols' class="upgrade" v-if="UPGS.gears[r*10+c].unl()" v-bind:class="{closed: !UPGS.gears[r*10+c].can() && !player.upgs.gears.includes(r*10+c), unlocked: player.upgs.gears.includes(r*10+c)}" v-on:click="UPGS.buy('gears', r*10+c)">
                     <div style="height: 70px;">
@@ -93,7 +93,7 @@
             <div v-if="player.upgs.gp.includes(12)">Auto-tetr: <input type="checkbox" v-model="player.automators.tetr"></div>
         </div><div v-if='player.tabs[0] == 4'>
             <button class="prestige_reset rage_powers_tab" onclick="FUNCS.gains.rage_powers.reset()" v-bind:class="{closed: !FUNCS.gains.rage_powers.canReset()}">Reset for<br><b>{{ format(FUNCS.gains.rage_powers.points(), 0) }}</b><br>Rage Powers</button><br><br>
-            You have <h2>{{ format(player.rage_powers, 0) }}</h2> Rage Powers, which multiples mass gain based on unspent mass: log10(x+1)^{{ format(FUNCS.gains.rage_powers.effect().pow) }}<br>
+            You have <h2>{{ format(player.rage_powers, 0) }}</h2> Rage Powers, which multiplies mass gain based on unspent mass: log10(x+1)^{{ format(FUNCS.gains.rage_powers.effect().pow) }}<br>
             Currently: x{{ format(FUNCS.gains.rage_powers.effect().mul) }}<br><br>
             <div v-for='r in UPGS.rage_powers.rows' class="table_center">
                 <div v-for='c in UPGS.rage_powers.cols' class="upgrade" v-if="UPGS.rage_powers[r*10+c].unl()" v-bind:class="{closed: !UPGS.rage_powers[r*10+c].can() && !player.upgs.rage_powers.includes(r*10+c), unlocked: player.upgs.rage_powers.includes(r*10+c)}" v-on:click="UPGS.buy('rage_powers', r*10+c)">
@@ -106,7 +106,7 @@
             </div>
         </div><div v-if='player.tabs[0] == 5'>
             <button class="prestige_reset black_hole_tab" onclick="FUNCS.gains.black_hole.reset()" v-bind:class="{closed: !FUNCS.gains.black_hole.canReset()}">Transform RP to<br><b>{{ format(FUNCS.gains.black_hole.points(), 0) }}</b><br>Dark Matters</button><br><br>
-            You have <h2>{{ format(player.black_hole.dm, 0) }}</h2> Dark Matters, which multiples RP gain by {{ format(FUNCS.gains.black_hole.effect().mul) }}<br><br>
+            You have <h2>{{ format(player.black_hole.dm, 0) }}</h2> Dark Matters, which multiplies RP gain by {{ format(FUNCS.gains.black_hole.effect().mul) }}<br><br>
             <div class="table_center">
                 <div v-for='x in TABS[2]["Black Hole"]' v-if='x.unl()'>
                     <button v-on:click="FUNCS.chTabs(1, TABS[2]['Black Hole'].indexOf(x))" v-bind:class="{[x.style]: true}">{{ x.id }}</button>
@@ -120,15 +120,15 @@
                     </div>
                 </div>
             </div><div v-if='player.tabs[1] == 1'>
-                <button class="prestige_reset black_hole_tab" v-bind:tooltip="'If activates, the mass and RP gain, RP effect is raised by 1/3. When activates, reset like for Dark Matters and start to generate stored mass in Black Hole.'" onclick="FUNCS.gains.black_hole.execute()">{{ FUNCS.msgs.execute() }}</button><br><br>
+                <button class="prestige_reset black_hole_tab" v-bind:tooltip="'When activated, the mass, RP gain and RP effect is raised to the 1/3. When activated, reset for Dark Matters and generate stored mass in the Black Hole.'" onclick="FUNCS.gains.black_hole.execute()">{{ FUNCS.msgs.execute() }}</button><br><br>
                 <div class="table_center">
                     <div style="width: 40%;" class="table_center">
                         <div class="black_hole">
                             <div style="top: 100px; position: relative; font-size: 18px;">
                                 You have<br><h2 style="font-size: 22px;">{{ formatMass(player.black_hole.stored_mass) }}</h2><br>
                                 (+{{ formatMass(FUNCS.gains.black_hole.storedGain()) }}/s)<br>
-                                stored mass in Black Hole.<br>
-                                Which multiples mass power by<br>
+                                stored mass in the Black Hole.<br>
+                                Which multiplies mass power by<br>
                                 <h2 style="font-size: 22px;">{{ format(FUNCS.gains.black_hole.effect().pow) }}</h2>
                             </div>
                         </div>
@@ -149,7 +149,7 @@
                 </div>
             </div><div v-if='player.tabs[1] == 2'>
                 <button class="prestige_reset" onclick="FUNCS.gains.antidark_matters.reset()" v-bind:class="{closed: !FUNCS.gains.antidark_matters.canReset()}">Transform DM to<br><b>{{ format(FUNCS.gains.antidark_matters.points(), 0) }}</b><br>Anti-Dark Matters</button><br><br>
-                You have <h2>{{ format(player.black_hole.adm, 0) }}</h2> Anti-Dark Matters, which multiples Dark Matters gain by {{ format(FUNCS.gains.antidark_matters.effect().mul) }}<br><br>
+                You have <h2>{{ format(player.black_hole.adm, 0) }}</h2> Anti-Dark Matters, which multiplies Dark Matters gain by {{ format(FUNCS.gains.antidark_matters.effect().mul) }}<br><br>
                 <div v-for='r in UPGS.adm.rows' class="table_center">
                     <div v-for='c in UPGS.adm.cols' class="upgrade" v-if="UPGS.adm[r*10+c].unl()" v-bind:class="{closed: !UPGS.adm[r*10+c].can() && !player.upgs.adm.includes(r*10+c), unlocked: player.upgs.adm.includes(r*10+c)}" v-on:click="UPGS.buy('adm', r*10+c)">
                         <div style="height: 70px;">
