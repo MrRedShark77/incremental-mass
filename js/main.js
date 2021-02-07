@@ -152,7 +152,7 @@ const FUNCS = {
         'antidark_matters': {
             req() { return E(1e15) },
             can() { return player.black_hole.stored_mass.gte(this.req()) },
-            dis() { return formatMass(this.req())+' of stored mass in Black Hole' },
+            dis() { return formatMass(this.req())+' of stored mass in the Black Hole' },
             desc: `Anti-Dark Matters`,
         },
         'multiverse': {
@@ -302,7 +302,7 @@ const FUNCS = {
         },
         can() { return player.mass.gte(this.caps()) },
         reset() {
-            if (this.can()) if (confirm('You wanted to perform to enter new Multiverse? Resets all previous features (except achievements). Are you ready?')) {
+            if (this.can()) if (confirm('Do you want to enter a new Multiverse? This resets all previous features (except achievements). Are you ready?')) {
                 player.multiverse.number = player.multiverse.number.add(1)
                 this.doReset()
             }
@@ -328,7 +328,7 @@ const FUNCS = {
         },
     },
     msgs: {
-        execute() { return player.black_hole.bh_activated?'Stop Execute Black Hole':'Start to Execute Black Hole' },
+        execute() { return player.black_hole.bh_activated?'Stop Executing Black Hole':'Start to Execute Black Hole' },
         multiverse() {
             return FUNCS.multiverse.can()
             ?(`Perform to Enter Multiverse #${format(player.multiverse.number.add(1),0)}`)
@@ -397,7 +397,7 @@ const UPGS = {
                     .mul(MILESTONES.rank[3].can()?FUNCS.hasUpgrade('mass', 1).div(5).add(1):1)
                     .pow(MILESTONES.rank[7].can()?1.1:1)
                 )
-            +' gained mass.' },
+            +' to mass gain.' },
             cost(x=FUNCS.hasUpgrade('mass', 1)) { return E(E(.5).mul(MILESTONES.rank[2].can()?0.85:1).sub(MILESTONES.tier[3].can()?0.2:0).add(1)).pow(x).mul(10).div(FUNCS.hasBuyed('mass', 4)?UPGS.mass[4].effect():1) },
             can() { return player.mass.gte(this.cost()) },
             effect() {
@@ -418,7 +418,7 @@ const UPGS = {
         },
         2: {
             unl() { return MILESTONES.rank[2].can() || MILESTONES.multiverse[1].can() },
-            desc() { return 'Multiples mass upgrade 1 effect by '+format(
+            desc() { return "Multiplies mass upgrade 1's effect by "+format(
                     E(1.5).pow(FUNCS.hasBuyed('mass', 3)?UPGS.mass[3].effect():1)
                     .mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1)
                     .mul(MILESTONES.tier[2].can()?FUNCS.hasUpgrade('mass', 2).div(5).add(1):1)
@@ -442,7 +442,7 @@ const UPGS = {
         },
         3: {
             unl() { return MILESTONES.rank[3].can() || MILESTONES.multiverse[1].can() },
-            desc() { return 'Raises mass upgrade 2 effect by '+format(E(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1), 2)+' (additive)' },
+            desc() { return "Raises mass upgrade 2's effect to the "+format(E(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1), 2)+' (additive)' },
             cost(x=FUNCS.hasUpgrade('mass', 3)) { return E(10).mul(E(MILESTONES.rank[7].can()?0.75:1).sub(MILESTONES.tier[3].can()?0.2:0)).pow(x).mul(1000).div(FUNCS.hasBuyed('mass', 4)?UPGS.mass[4].effect():1) },
             can() { return player.mass.gte(this.cost()) },
             effect() {
@@ -460,7 +460,7 @@ const UPGS = {
         },
         4: {
             unl() { return MILESTONES.tier[5].can() },
-            desc() { return 'Divides all previous mass upgrades cost.' },
+            desc() { return "Divides all previous mass upgrades' cost." },
             cost(x=FUNCS.hasUpgrade('mass', 4)) { return E(1e3*(MILESTONES.tetr[3].can()?0.85:1)).pow(x).mul(1e3) },
             can() { return player.mass.gte(this.cost()) },
             effect() {
@@ -544,7 +544,7 @@ const UPGS = {
         },
         13: {
             unl() { return player.unlocked.includes('rage_powers') && player.achs.includes(24) },
-            desc() { return 'Subtract rank requirement based on unspent RP.' },
+            desc() { return 'Subtract rank requirements based on unspent RP.' },
             cost() { return E(60000) },
             can() { return player.rage_powers.gte(this.cost()) },
             effect() {
@@ -567,7 +567,7 @@ const UPGS = {
         },
         22: {
             unl() { return player.unlocked.includes('rage_powers') && MILESTONES.dark_matter[4].can() },
-            desc() { return 'Rage Powers are stronger based on stored mass in Black Hole.' },
+            desc() { return 'Rage Powers are stronger based on stored mass in the Black Hole.' },
             cost() { return E(1e8) },
             can() { return player.rage_powers.gte(this.cost()) },
             effect() {
@@ -579,7 +579,7 @@ const UPGS = {
         },
         23: {
             unl() { return player.unlocked.includes('rage_powers') && MILESTONES.dark_matter[4].can() },
-            desc() { return 'Raise RP gain by 1.25.' },
+            desc() { return 'Raise RP gain to the 1.25.' },
             cost() { return E(1.5e9) },
             can() { return player.rage_powers.gte(this.cost()) },
         },
@@ -593,7 +593,7 @@ const UPGS = {
         cols: 3,
         1: {
             unl() { return MILESTONES.dark_matter[1].can() },
-            desc() { return 'Multiples stored mass in Black Hole gain.' },
+            desc() { return "Multiples stored mass by Black Hole gain." },
             cost(x=FUNCS.hasUpgrade('dm', 1)) {
                 let cost = E(2).pow(FUNCS.hasUpgrade('dm', 1)).pow(0.75).div(player.upgs.gp.includes(23)?UPGS.gp[23].effect():1)
                 return cost.ceil()
@@ -609,7 +609,7 @@ const UPGS = {
         },
         2: {
             unl() { return MILESTONES.dark_matter[1].can() },
-            desc() { return 'Multiples stored mass in Black Hole effect.' },
+            desc() { return "Multiplies stored mass by Black Hole's effect." },
             cost(x=FUNCS.hasUpgrade('dm', 2)) { return E(2).pow(FUNCS.hasUpgrade('dm', 2)).pow(0.75).div(player.upgs.gp.includes(23)?UPGS.gp[23].effect():1).ceil() },
             can() { return player.black_hole.dm.gte(this.cost()) },
             effect() {
@@ -622,7 +622,7 @@ const UPGS = {
         },
         3: {
             unl() { return MILESTONES.dark_matter[5].can() },
-            desc() { return 'Raises all these prevoius upgrades effects.' },
+            desc() { return "Raises all these previous upgrades' effects." },
             cost(x=FUNCS.hasUpgrade('dm', 3)) { return FUNCS.hasUpgrade('dm', 3).add(1).pow(1.5).mul(2).div(player.upgs.gp.includes(23)?UPGS.gp[23].effect():1).floor() },
             can() { return player.black_hole.dm.gte(this.cost()) },
             effect() {
@@ -655,7 +655,7 @@ const UPGS = {
         },
         12: {
             unl() { return player.unlocked.includes('antidark_matters') },
-            desc() { return 'Adds softcap of RP effect.' },
+            desc() { return 'Adds softcap of the RP effect.' },
             cost() { return E(500) },
             can() { return player.black_hole.adm.gte(this.cost()) },
             effect() {
@@ -713,7 +713,7 @@ const UPGS = {
 
         21: {
             unl() { return MILESTONES.multiverse[3].can() },
-            desc() { return 'Gears gain formula is better. [log10(x+1)^0.75 → log5(x+1)^3]' },
+            desc() { return 'Gear gain formula is better. [log10(x+1)^0.75 → log5(x+1)^3]' },
             cost() { return E(7500) },
             can() { return player.multiverse.gp.gte(this.cost()) && player.upgs.gp.includes(11) },
         },
@@ -730,7 +730,7 @@ const UPGS = {
         },
         23: {
             unl() { return MILESTONES.multiverse[4].can() },
-            desc() { return 'Upgrades in Black Hole cost is divided based on Grid Powers.' },
+            desc() { return "Black Hole Upgrades' costs are divided based on Grid Powers." },
             cost() { return E(90000) },
             can() { return player.multiverse.gp.gte(this.cost()) && player.upgs.gp.includes(22) },
             effect() {
@@ -742,7 +742,7 @@ const UPGS = {
 
         31: {
             unl() { return MILESTONES.multiverse[4].can() },
-            desc() { return 'RP upgrade 1:3 effect is multiplied based on tiers.' },
+            desc() { return 'RP upgrades 1:3 effect is multiplied based on tiers.' },
             cost() { return E(40000) },
             can() { return player.multiverse.gp.gte(this.cost()) && player.upgs.gp.includes(22) },
             effect() {
@@ -775,17 +775,17 @@ const MILESTONES = {
     rank: {
         rows: 12,
         1: {
-            desc() { return 'Unlock new upgrade.' },
+            desc() { return 'Unlock a new upgrade.' },
             req() { return E(2) },
             can() { return player.rank.gte(this.req()) },
         },
         2: {
-            desc() { return 'Unlock second upgrade. Reduce mass upgrade 1 cost scaled by 15%.' },
+            desc() { return 'Unlock the second upgrade. Reduce mass upgrade 1 cost scaling by 15%.' },
             req() { return E(3) },
             can() { return player.rank.gte(this.req()) },
         },
         3: {
-            desc() { return 'Unlock third upgrade. Reduce mass upgrade 2 cost scaled by 15%. Mass upgrade 1 level boost this effect.' },
+            desc() { return "Unlock the third upgrade. Reduce mass upgrade 2 cost scaling by 15%. Mass Upgrade 1's level boosts its effect." },
             req() { return E(4) },
             can() { return player.rank.gte(this.req()) },
         },
@@ -795,7 +795,7 @@ const MILESTONES = {
             can() { return player.rank.gte(this.req()) },
         },
         5: {
-            desc() { return 'Multiples mass upgrades 2-3 effects based on ranks.' },
+            desc() { return "Multiplies mass upgrades 2-3's effects based on ranks." },
             req() { return E(6) },
             can() { return player.rank.gte(this.req()) },
         },
@@ -805,7 +805,7 @@ const MILESTONES = {
             can() { return player.rank.gte(this.req()) },
         },
         7: {
-            desc() { return 'Reduce mass upgrade 3 cost scaled by 25%. Raise mass upgrade 1 effect by 1.1.' },
+            desc() { return 'Reduce mass upgrade 3 cost scaling by 25%. Raise mass upgrade 1 effect to the 1.1.' },
             req() { return E(10) },
             can() { return player.rank.gte(this.req()) },
         },
@@ -815,12 +815,12 @@ const MILESTONES = {
             can() { return player.rank.gte(this.req()) },
         },
         9: {
-            desc() { return 'Rank 6 effect is stronger.' },
+            desc() { return "Rank 6's effect is stronger." },
             req() { return E(20) },
             can() { return player.rank.gte(this.req()) },
         },
         10: {
-            desc() { return 'Mass upgrade 3 softcapped is weaker.' },
+            desc() { return "Mass upgrade 3's softcap is weaker." },
             req() { return E(24) },
             can() { return player.rank.gte(this.req()) },
         },
@@ -830,7 +830,7 @@ const MILESTONES = {
             can() { return player.rank.gte(this.req()) },
         },
         12: {
-            desc() { return `For every rank (start at 40) multiples mass gain by ${format(this.effect(), 2)}, but will softcap at 100.` },
+            desc() { return `For every rank (starting at 40), mass gain is multiplied by ${format(this.effect(), 2)}, but will softcap at 100.` },
             req() { return E(40) },
             can() { return player.rank.gte(this.req()) },
             effect() {
@@ -842,17 +842,17 @@ const MILESTONES = {
     tier: {
         rows: 6,
         1: {
-            desc() { return 'Reduce rank reqirements by 20%.' },
+            desc() { return 'Reduce rank requirements by 20%.' },
             req() { return E(2) },
             can() { return player.tier.gte(this.req()) },
         },
         2: {
-            desc() { return 'Mass upgrade 2 level boost this effect.' },
+            desc() { return "Mass upgrade 2's level boosts its effect." },
             req() { return E(3) },
             can() { return player.tier.gte(this.req()) },
         },
         3: {
-            desc() { return 'Reduce mass upgrade 1-3 cost scaled by 20%.' },
+            desc() { return "Reduce mass upgrade 1-3's cost scaling by 20%." },
             req() { return E(4) },
             can() { return player.tier.gte(this.req()) },
         },
@@ -862,12 +862,12 @@ const MILESTONES = {
             can() { return player.tier.gte(this.req()) },
         },
         5: {
-            desc() { return 'Unlock fourth mass upgrade, called "cheaper".' },
+            desc() { return 'Unlock the fourth mass upgrade, called "cheaper".' },
             req() { return E(7) },
             can() { return player.tier.gte(this.req()) },
         },
         6: {
-            desc() { return 'Rank 40 effect is stronger based on tiers.' },
+            desc() { return "Rank 40's effect is stronger based on tiers." },
             req() { return E(10) },
             can() { return player.tier.gte(this.req()) },
         },
@@ -875,17 +875,17 @@ const MILESTONES = {
     tetr: {
         rows: 5,
         1: {
-            desc() { return 'Reduce tier reqirements by 10%.' },
+            desc() { return 'Reduce tier requirements by 10%.' },
             req() { return E(2) },
             can() { return player.tetr.gte(this.req()) },
         },
         2: {
-            desc() { return 'Mass upgrade 3 level boost this effect.' },
+            desc() { return "Mass upgrade 3's level boost its effect." },
             req() { return E(3) },
             can() { return player.tetr.gte(this.req()) },
         },
         3: {
-            desc() { return 'Reduce mass upgrade 4 cost scaled by 15%.' },
+            desc() { return "Reduce mass upgrade 4's cost scaling by 15%." },
             req() { return E(4) },
             can() { return player.tetr.gte(this.req()) },
         },
@@ -895,7 +895,7 @@ const MILESTONES = {
             can() { return player.tetr.gte(this.req()) },
         },
         5: {
-            desc() { return 'Increase Rank 40 softcap by 100.' },
+            desc() { return "Increase Rank 40's softcap by 100." },
             req() { return E(7) },
             can() { return player.tetr.gte(this.req()) },
         },
@@ -903,17 +903,17 @@ const MILESTONES = {
     dark_matter: {
         rows: 6,
         1: {
-            desc() { return 'Unlock Black Hole Extractor.' },
+            desc() { return 'Unlock the Black Hole Extractor.' },
             req() { return E(1) },
             can() { return player.black_hole.total_dm.gte(this.req()) },
         },
         2: {
-            desc() { return 'Rank doesn’t reset mass and upgrades.' },
+            desc() { return 'Ranks don’t reset mass and upgrades.' },
             req() { return E(5) },
             can() { return player.black_hole.total_dm.gte(this.req()) },
         },
         3: {
-            desc() { return `Gain free mass upgrade 1-2 based on total Dark Matters.` },
+            desc() { return `Gain free mass upgrades 1-2 based on total Dark Matters.` },
             req() { return E(15) },
             can() { return player.black_hole.total_dm.gte(this.req()) },
         },
@@ -923,12 +923,12 @@ const MILESTONES = {
             can() { return player.black_hole.total_dm.gte(this.req()) },
         },
         5: {
-            desc() { return `Gain 10% of RP gain per second. Unlock third stored mass upgrade.` },
+            desc() { return `Gain 10% of pending RP gain per second. Unlock the third stored mass upgrade.` },
             req() { return E(160) },
             can() { return player.black_hole.total_dm.gte(this.req()) },
         },
         6: {
-            desc() { return `Tier no longer resets rank.` },
+            desc() { return `Tiers no longer reset ranks.` },
             req() { return E(640) },
             can() { return player.black_hole.total_dm.gte(this.req()) },
         },
@@ -941,22 +941,22 @@ const MILESTONES = {
             can() { return player.multiverse.number.gte(this.req()) },
         },
         1: {
-            desc() { return 'Unlock Tetr (need more Tiers to reset for new Tetr), and button “buy max” in Black Hole Extractor, start with all mass upgrades unlocked (except fourth mass upgrade). Mass upgrades no longer buy mass.' },
+            desc() { return 'Unlock Tetr (needs more Tiers to reset for a new Tetr), and a “buy max” button in the Black Hole Extractor. Start with all mass upgrades unlocked (except for the fourth mass upgrade). Mass upgrades no longer buy mass.' },
             req() { return E(2) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
         2: {
-            desc() { return 'Unlock Grid Upgrades, start with 1-6th DM milestones unlocked and 200 Anti-DMs.' },
+            desc() { return 'Unlock Grid Upgrades, and start with DM milestones 1-6 unlocked and 200 Anti-DMs.' },
             req() { return E(3) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
         3: {
-            desc() { return 'Unlock 3 more Grid upgrades. You can break mass capacity and bulk rank.' },
+            desc() { return 'Unlock 3 more Grid upgrades. You can break mass capacity and bulk ranks.' },
             req() { return E(5) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
         4: {
-            desc() { return 'Unlock 5 more Grid upgrades. Keep gears upgrades on reset.' },
+            desc() { return 'Unlock 5 more Grid upgrades. Keep gear upgrades on reset.' },
             req() { return E(8) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
@@ -983,7 +983,7 @@ const ACHIEVEMENTS = {
     },
     14: {
         title: 'Upgrade Power',
-        desc() { return `Get Rage Powers. Reward: Triple gears gain.` },
+        desc() { return `Get Rage Powers. Reward: Triple gear gain.` },
         can() { return player.rage_powers.gte(1) },
     },
     15: {
@@ -1013,7 +1013,7 @@ const ACHIEVEMENTS = {
     },
     25: {
         title: 'Antimatter?',
-        desc() { return `Get Anti-Dark Matters. Reward: Dark Matters effect are stronger.` },
+        desc() { return `Get Anti-Dark Matters. Reward: Dark Matter effect is stronger.` },
         can() { return player.black_hole.adm.gte(1) },
     },
     31: {
@@ -1053,7 +1053,7 @@ const ACHIEVEMENTS = {
     },
     43: {
         title: 'Black Storage',
-        desc() { return `Get ${formatMass(1e6)} of stored mass in Black Hole. Reward: Double stored mass gain.` },
+        desc() { return `Get ${formatMass(1e6)} of stored mass in the Black Hole. Reward: Double stored mass gain.` },
         can() { return player.black_hole.stored_mass.gte(1e6) },
     },
     44: {
@@ -1063,7 +1063,7 @@ const ACHIEVEMENTS = {
     },
     45: {
         title: 'No problem here',
-        desc() { return `Transform to DM with only Tier 1.` },
+        desc() { return `Transform to DM at only Tier 1.` },
         can() { return false },
     },
     51: {
@@ -1078,7 +1078,7 @@ const ACHIEVEMENTS = {
     },
     53: {
         title: 'Black Hole loves eat our Earth',
-        desc() { return `Get ${formatMass(5.972e27)} of stored mass in Black Hole. Reward: Triple stored mass gain.` },
+        desc() { return `Get ${formatMass(5.972e27)} of stored mass in the Black Hole. Reward: Triple stored mass gain.` },
         can() { return player.black_hole.stored_mass.gte(5.972e27) },
     },
     54: {
@@ -1088,28 +1088,28 @@ const ACHIEVEMENTS = {
     },
     55: {
         title: 'Googol Fat Black Hole',
-        desc() { return `Get ${formatMass(1e100*1.5e56)} of stored mass in Black Hole. Reward: 5x stored mass gain.` },
+        desc() { return `Get ${formatMass(1e100*1.5e56)} of stored mass in the Black Hole. Reward: Quintuple stored mass gain.` },
         can() { return player.black_hole.stored_mass.gte(1e100*1.5e56) },
     },
     61: {
         title: 'NEW MULTIVERSE!!',
-        desc() { return `Perform to Enter Multiverse #2. Reward: Double DM gain.` },
+        desc() { return `Perform Enter Multiverse #2. Reward: Double DM gain.` },
         can() { return player.multiverse.number.gte(2) },
     },
     62: {
-        title: "#2, #3 & #5 milestone isn't not prime?",
-        desc() { return `Perform to Enter Multiverse #5.` },
+        title: "#2, #3 & #5 milestones aren't not prime?",
+        desc() { return `Perform Enter Multiverse #5.` },
         can() { return player.multiverse.number.gte(5) },
     },
     63: {
         title: "more universe",
-        desc() { return `Get ${formatMass(1.5e81)} of stored mass in Black Hole.` },
+        desc() { return `Get ${formatMass(1.5e81)} of stored mass in the Black Hole.` },
         can() { return player.black_hole.stored_mass.gte(1.5e81) },
     },
     64: {
         title: "10! Dark Matters!",
-        desc() { return `Gain ${format(1*2*3*4*5*6*7*8*9*10)} total Dark Matters.` },
-        can() { return player.black_hole.total_dm.gte(1*2*3*4*5*6*7*8*9*10) },
+        desc() { return `Gain ${format(2*3*4*5*6*7*8*9*10)} total Dark Matters.` },
+        can() { return player.black_hole.total_dm.gte(2*3*4*5*6*7*8*9*10) },
     },
 }
 
