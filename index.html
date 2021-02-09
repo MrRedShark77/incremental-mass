@@ -198,6 +198,20 @@
                         {{ r }}:{{ c }}
                     </div>
                 </div>
+            </div><div v-if='player.tabs[1] == 2'>
+                You have <h2>{{ format(player.multiverse.pp) }}</h2> Pentogen Powers (PP), which has generated {{ format(FUNCS.gains.pp()) }} per second (based on ranks).<br><br>
+                Upgrade Power: {{ format(FUNCS.getPentogenPower().mul(100), 0) }}%<br><br>
+                <button onclick="UPGS.buyMax('pp')">Buy Max</button><br>
+                <div class="table_center">
+                    <div v-for='x in UPGS.pp.cols' class="upgrade" v-if="UPGS.pp[x].unl()" v-bind:class="{closed: !UPGS.pp[x].can()}" v-on:click="UPGS.buy('pp', x)">
+                        <div style="height: 70px;">
+                            {{ UPGS.pp[x].desc() }}
+                        </div>
+                        Cost: {{ format(UPGS.pp[x].cost(), 0) }} PP<br>
+                        Level {{ format(FUNCS.hasUpgrade('pp', x), 0) }}
+                        <span v-if="UPGS.pp[x].effect"><br>Currently: {{ UPGS.pp[x].effDesc() }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -30,6 +30,12 @@ function calc(dt) {
     if (MILESTONES.dark_matter[1].can()) player.black_hole.stored_mass = player.black_hole.stored_mass.add(FUNCS.gains.black_hole.storedGain().mul(dt/1000).mul(player.upgs.gp.includes(32)?FUNCS.getMassPower():1))
     if (MILESTONES.dark_matter[5].can()) player.rage_powers = player.rage_powers.add(FUNCS.gains.rage_powers.points().mul(dt/10000))
     if (MILESTONES.multiverse[2].can()) player.multiverse.gp = player.multiverse.gp.add(FUNCS.gains.gp().mul(dt/1000))
+    if (player.upgs.gp.includes(34)) {
+        let gain = FUNCS.gains.black_hole.points().mul(dt/10000)
+        player.black_hole.dm = player.black_hole.dm.add(gain)
+        player.black_hole.total_dm = player.black_hole.total_dm.add(gain)
+    }
+    if (MILESTONES.multiverse[6].can()) player.multiverse.pp = player.multiverse.pp.add(FUNCS.gains.pp().mul(dt/1000))
 }
 
 function wipe() {
@@ -45,6 +51,7 @@ function wipe() {
             dm: {},
             adm: [],
             gp: [],
+            pp: {},
         },
         tabs: [0,0],
         msgs: {
@@ -71,6 +78,7 @@ function wipe() {
         multiverse: {
             number: E(1),
             gp: E(0),
+            pp: E(0),
         },
     }
 }
@@ -118,6 +126,7 @@ function loadPlayer(load) {
     if (l_upg.dm != undefined) for (let i = 0; i < Object.keys(l_upg.dm).length; i++) p_upg.dm[Object.keys(l_upg.dm)[i]] = ex(l_upg.dm[Object.keys(l_upg.dm)[i]])
     if (l_upg.adm != undefined) p_upg.adm = l_upg.adm
     if (l_upg.gp != undefined) p_upg.gp = l_upg.gp
+    if (l_upg.pp != undefined) for (let i = 0; i < Object.keys(l_upg.pp).length; i++) p_upg.pp[Object.keys(l_upg.pp)[i]] = ex(l_upg.pp[Object.keys(l_upg.pp)[i]])
 
     if (load.automators != undefined) {
         let p_auto = player.automators, l_auto = load.automators;
@@ -140,6 +149,7 @@ function loadPlayer(load) {
         let pm = player.multiverse, lm = load.multiverse
         pm.number = ex(lm.number)
         if (lm.gp != undefined) pm.gp = ex(lm.gp)
+        if (lm.pp != undefined) pm.pp = ex(lm.pp)
     }
 
     if (load.unlocked != undefined) player.unlocked = load.unlocked

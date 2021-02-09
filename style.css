@@ -99,6 +99,12 @@ h1, h2 {
 	animation: chroma_color 8s infinite linear;
 }
 
+.pentogen_tab {
+	background-color: black;
+	border-color: rgb(231, 30, 238);
+	color: rgb(231, 30, 238);
+}
+
 .milestone_dm {
 	border: solid 3px white;
 	width: 150px;
