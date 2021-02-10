@@ -203,13 +203,15 @@
                 Upgrade Power: {{ format(FUNCS.getPentogenPower().mul(100), 0) }}%<br><br>
                 <button onclick="UPGS.buyMax('pp')">Buy Max</button><br>
                 <div class="table_center">
-                    <div v-for='x in UPGS.pp.cols' class="upgrade" v-if="UPGS.pp[x].unl()" v-bind:class="{closed: !UPGS.pp[x].can()}" v-on:click="UPGS.buy('pp', x)">
-                        <div style="height: 70px;">
-                            {{ UPGS.pp[x].desc() }}
+                    <div class="table_center" style="width: 1200px;">
+                        <div v-for='x in UPGS.pp.cols' class="upgrade" v-if="UPGS.pp[x].unl()" v-bind:class="{closed: !UPGS.pp[x].can()}" v-on:click="UPGS.buy('pp', x)">
+                            <div style="height: 70px;">
+                                {{ UPGS.pp[x].desc() }}
+                            </div>
+                            Cost: {{ format(UPGS.pp[x].cost(), 0) }} PP<br>
+                            Level {{ format(FUNCS.hasUpgrade('pp', x), 0) }}
+                            <span v-if="UPGS.pp[x].effect"><br>Currently: {{ UPGS.pp[x].effDesc() }}</span>
                         </div>
-                        Cost: {{ format(UPGS.pp[x].cost(), 0) }} PP<br>
-                        Level {{ format(FUNCS.hasUpgrade('pp', x), 0) }}
-                        <span v-if="UPGS.pp[x].effect"><br>Currently: {{ UPGS.pp[x].effDesc() }}</span>
                     </div>
                 </div>
             </div>

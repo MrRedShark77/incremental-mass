@@ -176,12 +176,13 @@ const FUNCS = {
         let gain = E(1)
         if (player.unlocked.includes('black_hole')) gain = gain.mul(FUNCS.gains.black_hole.effect().pow)
         if (player.upgs.gp.includes(14)) gain = gain.mul(UPGS.gp[14].effect())
+        if (FUNCS.hasBuyed('pp', 5)) gain = gain.mul(UPGS.pp[5].effect())
         if (player.upgs.gp.includes(22)) gain = gain.pow(UPGS.gp[22].effect())
         return gain
     },
     getPentogenPower() {
         let gain = E(1)
-        if (MILESTONES.tetr[7].can()) gain = gain.add(player.tetr.div(75))
+        if (MILESTONES.tetr[7].can()) gain = gain.add(MILESTONES.tetr[7].effect())
         return gain
     },
     gains: {
@@ -274,7 +275,10 @@ const FUNCS = {
                 if (player.achs.includes(55)) gain = gain.mul(5)
                 if (FUNCS.hasBuyed('dm', 1)) gain = gain.mul(UPGS.dm[1].effect())
 
-                if (!player.black_hole.bh_activated) gain = E(0)
+                if (!player.black_hole.bh_activated) {
+                    if (player.upgs.gp.includes(51)) gain = UPGS.gp[51].effect()
+                    else gain = E(0)
+                }
                 return gain
             },
         },
@@ -315,6 +319,7 @@ const FUNCS = {
         pp() {
             let gain = player.rank.sub(1).pow(1/2)
             if (FUNCS.hasBuyed('pp', 4)) gain = gain.mul(UPGS.pp[4].effect())
+            if (player.upgs.gp.includes(15)) gain = gain.mul(UPGS.gp[15].effect())
             return gain
         },
     },
@@ -418,7 +423,7 @@ const UPGS = {
             desc() { return 'Adds '+
                 formatMass(
                     E(FUNCS.hasBuyed('mass', 2)?UPGS.mass[2].effect():1)
-                    .mul(MILESTONES.rank[3].can()?FUNCS.hasUpgrade('mass', 1).div(5).add(1):1)
+                    .mul(MILESTONES.rank[3].can()?MILESTONES.rank[3].effect():1)
                     .pow(MILESTONES.rank[7].can()?1.1:1)
                 )
             +' gained mass.' },
@@ -427,7 +432,7 @@ const UPGS = {
             effect() {
                 let eff = E(1)
                 if (FUNCS.hasBuyed('mass', 2)) eff = eff.mul(UPGS.mass[2].effect())
-                if (MILESTONES.rank[3].can()) eff = eff.mul(FUNCS.hasUpgrade('mass', 1).div(5).add(1))
+                if (MILESTONES.rank[3].can()) eff = eff.mul(MILESTONES.rank[3].effect())
                 if (MILESTONES.rank[7].can()) eff = eff.pow(1.1)
 
                 let lvl = FUNCS.hasUpgrade('mass', 1)
@@ -445,8 +450,8 @@ const UPGS = {
             unl() { return MILESTONES.rank[2].can() || MILESTONES.multiverse[1].can() },
             desc() { return 'Multiples mass upgrade 1 effect by '+format(
                     E(1.5).pow(FUNCS.hasBuyed('mass', 3)?UPGS.mass[3].effect():1)
-                    .mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1)
-                    .mul(MILESTONES.tier[2].can()?FUNCS.hasUpgrade('mass', 2).div(5).add(1):1)
+                    .mul(MILESTONES.rank[5].can()?MILESTONES.rank[5].effect():1)
+                    .mul(MILESTONES.tier[2].can()?MILESTONES.tier[2].effect():1)
                     , 2)+' (additive)' },
             cost(x=FUNCS.hasUpgrade('mass', 2)) { return E(5).mul(E(MILESTONES.rank[3].can()?0.9:1).sub(MILESTONES.tier[3].can()?0.2:0)).pow(x).mul(100).div(FUNCS.hasBuyed('mass', 4)?UPGS.mass[4].effect():1) },
             can() { return player.mass.gte(this.cost()) },
@@ -456,8 +461,8 @@ const UPGS = {
                 if (player.upgs.gp.includes(42)) lvl = lvl.add(UPGS.gp[42].effect())
                 if (MILESTONES.tetr[4].can()) lvl = lvl.mul(1.05)
                 let eff = lvl.mul(E(1.5).pow(FUNCS.hasBuyed('mass', 3)?UPGS.mass[3].effect():1)
-                .mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1)
-                .mul(MILESTONES.tier[2].can()?FUNCS.hasUpgrade('mass', 2).div(5).add(1):1)).add(1)
+                .mul(MILESTONES.rank[5].can()?MILESTONES.rank[5].effect():1)
+                .mul(MILESTONES.tier[2].can()?MILESTONES.tier[2].effect():1)).add(1)
                 .pow(MILESTONES.rank[11].can()?1.025:1)
                 return eff
             },
@@ -468,7 +473,7 @@ const UPGS = {
         },
         3: {
             unl() { return MILESTONES.rank[3].can() || MILESTONES.multiverse[1].can() },
-            desc() { return 'Raises mass upgrade 2 effect by '+format(E(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1), 2)+' (additive)' },
+            desc() { return 'Raises mass upgrade 2 effect by '+format(E(MILESTONES.rank[5].can()?MILESTONES.rank[5].effect():1), 2)+' (additive)' },
             cost(x=FUNCS.hasUpgrade('mass', 3)) { return E(10).mul(E(MILESTONES.rank[7].can()?0.75:1).sub(MILESTONES.tier[3].can()?0.2:0)).pow(x).mul(1000).div(FUNCS.hasBuyed('mass', 4)?UPGS.mass[4].effect():1) },
             can() { return player.mass.gte(this.cost()) },
             effect() {
@@ -480,7 +485,7 @@ const UPGS = {
                 if (player.upgs.gp.includes(42)) lvl = lvl.add(UPGS.gp[42].effect())
                 if (MILESTONES.tetr[2].can()) lvl = lvl.mul(1.2)
                 if (MILESTONES.tetr[4].can()) lvl = lvl.mul(1.05)
-                return lvl.add(1).add(MILESTONES.tier[4].can()?player.rank.pow(0.525):0).mul(MILESTONES.rank[5].can()?player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5):1)
+                return lvl.add(1).add(MILESTONES.tier[4].can()?MILESTONES.tier[4].effect():0).mul(MILESTONES.rank[5].can()?MILESTONES.rank[5].effect():1)
             },
             effDesc(x=this.effect()) { return '^'+format(x,2) },
             bulk(){
@@ -633,6 +638,7 @@ const UPGS = {
             effect() {
                 let lvl = FUNCS.hasUpgrade('dm', 1)
                 if (lvl.gte(10)) lvl = lvl.sub(10).pow(1/3).add(10)
+                if (FUNCS.hasBuyed('pp', 6)) lvl = lvl.add(UPGS.pp[6].effect())
                 return E(1.5).pow(lvl).pow(FUNCS.hasBuyed('dm', 3)?UPGS.dm[3].effect():1)
             },
             effDesc(x=this.effect()) { return 'x'+format(x, 2) },
@@ -646,6 +652,7 @@ const UPGS = {
             effect() {
                 let lvl = FUNCS.hasUpgrade('dm', 2)
                 if (lvl.gte(10)) lvl = lvl.sub(10).pow(1/2).add(10)
+                if (FUNCS.hasBuyed('pp', 6)) lvl = lvl.add(UPGS.pp[6].effect())
                 return E(1.25).pow(lvl).pow(FUNCS.hasBuyed('dm', 3)?UPGS.dm[3].effect():1)
             },
             effDesc(x=this.effect()) { return 'x'+format(x, 2) },
@@ -659,8 +666,10 @@ const UPGS = {
             effect() {
                 let lvl = FUNCS.hasUpgrade('dm', 3)
                 if (lvl.gte(10000)) lvl = lvl.sub(10000).pow(3/4).add(10000)
-                if (lvl.gte(1e8)) lvl = lvl.sub(1e8).pow(3/4).add(1e8)
-                return lvl.add(1).pow(1.4/4)
+                
+                let eff = lvl.add(1).pow(1.4/4)
+                if (eff.gte(1000)) eff = eff.sub(1000).div(4).add(1000)
+                return eff
             },
             effDesc(x=this.effect()) { return '^'+format(x, 2) },
             bulk() { return player.black_hole.dm.mul(player.upgs.gp.includes(23)?UPGS.gp[23].effect():1).div(2).pow(2/3).sub(1).floor() },
@@ -727,8 +736,8 @@ const UPGS = {
         type: 'normal',
         res: 'gp',
 
-        cols: 4,
-        rows: 4,
+        cols: 5,
+        rows: 5,
 
         11: {
             unl() { return MILESTONES.multiverse[2].can() },
@@ -763,6 +772,17 @@ const UPGS = {
                 return eff
             },
             effDesc(x=this.effect()) { return 'x'+format(x, 3) },
+        },
+        15: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Gain more Pentogen Powers based on GP.' },
+            cost() { return E(1e15) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = player.multiverse.gp.add(1).log10().mul(2).add(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x) },
         },
 
         21: {
@@ -799,6 +819,17 @@ const UPGS = {
             cost() { return E(1.6e7) },
             can() { return player.multiverse.gp.gte(this.cost()) && player.upgs.gp.includes(14) },
         },
+        25: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Placeholder.' },
+            cost() { return E(1/0) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = E(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
+        },
 
         31: {
             unl() { return MILESTONES.multiverse[4].can() },
@@ -833,6 +864,17 @@ const UPGS = {
             desc() { return 'Gain 10% of Dark Matters gain per second.' },
             cost() { return E(1e8) },
             can() { return player.multiverse.gp.gte(this.cost()) && player.upgs.gp.includes(24) },
+        },
+        35: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Placeholder.' },
+            cost() { return E(1/0) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = E(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
 
         41: {
@@ -879,6 +921,73 @@ const UPGS = {
             },
             effDesc(x=this.effect()) { return format(x.sub(1).mul(100), 2)+"%" },
         },
+        45: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Placeholder.' },
+            cost() { return E(1/0) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = E(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
+        },
+
+        51: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'You can gain stored mass passive in Black Hole without extracting Black Hole.' },
+            cost() { return E(1e15) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = (FUNCS.hasBuyed('dm', 1)?UPGS.dm[1].effect():E(1)).pow(3)
+                return eff
+            },
+            effDesc(x=this.effect()) { return '+'+formatMass(x)+'/s' },
+        },
+        52: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Placeholder.' },
+            cost() { return E(1/0) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = E(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
+        },
+        53: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Placeholder.' },
+            cost() { return E(1/0) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = E(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
+        },
+        54: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Placeholder.' },
+            cost() { return E(1/0) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = E(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
+        },
+        55: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Placeholder.' },
+            cost() { return E(1/0) },
+            can() { return player.multiverse.gp.gte(this.cost()) },
+            effect() {
+                let eff = E(1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
+        },
     },
     pp: {
         name: 'pp',
@@ -886,7 +995,7 @@ const UPGS = {
         type: 'buyables',
         res: 'pp',
 
-        cols: 4,
+        cols: 6,
         1: {
             unl() { return MILESTONES.multiverse[6].can() },
             desc() { return 'Multiples mass gain.' },
@@ -951,6 +1060,38 @@ const UPGS = {
             effDesc(x=this.effect()) { return 'x'+format(x, 2) },
             bulk() { return player.multiverse.pp.div(1000).add(1).logBase(5).floor() },
         },
+        5: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Multiples Mass Power based on mass.' },
+            cost(x=FUNCS.hasUpgrade('pp', 5)) {
+                let cost = E(7.5).pow(x).mul(1e5)
+                return cost.floor()
+            },
+            can() { return player.multiverse.pp.gte(this.cost()) },
+            effect() {
+                let lvl = FUNCS.hasUpgrade('pp', 5)
+                lvl = lvl.mul(FUNCS.getPentogenPower())
+                return player.mass.add(1).pow(0.001).pow(lvl.pow(1/4))
+            },
+            effDesc(x=this.effect()) { return 'x'+format(x, 2) },
+            bulk() { return player.multiverse.pp.div(1e5).add(1).logBase(7.5).floor() },
+        },
+        6: {
+            unl() { return MILESTONES.multiverse[7].can() },
+            desc() { return 'Gain free DM upgrades 1-2 based on PP.' },
+            cost(x=FUNCS.hasUpgrade('pp', 6)) {
+                let cost = E(10).pow(x).mul(5e5)
+                return cost.floor()
+            },
+            can() { return player.multiverse.pp.gte(this.cost()) },
+            effect() {
+                let lvl = FUNCS.hasUpgrade('pp', 6)
+                lvl = lvl.mul(FUNCS.getPentogenPower())
+                return player.multiverse.pp.add(1).log10().add(1).pow(lvl.pow(0.4)).sub(1).floor()
+            },
+            effDesc(x=this.effect()) { return '+'+format(x, 0) },
+            bulk() { return player.multiverse.pp.div(5e5).add(1).logBase(10).floor() },
+        },
     },
 }
 
@@ -968,9 +1109,13 @@ const MILESTONES = {
             can() { return player.rank.gte(this.req()) },
         },
         3: {
-            desc() { return 'Unlock third upgrade. Reduce mass upgrade 2 cost scaled by 15%. Mass upgrade 1 level boost this effect.' },
+            desc() { return `Unlock third upgrade. Reduce mass upgrade 2 cost scaled by 15%. Mass upgrade 1 level boost this effect (+${format(this.effect(),0)} to level).` },
             req() { return E(4) },
             can() { return player.rank.gte(this.req()) },
+            effect() {
+                let eff = FUNCS.hasUpgrade('mass', 1).div(5).add(1)
+                return eff
+            },
         },
         4: {
             desc() { return 'Raise mass gain by 1.25.' },
@@ -978,9 +1123,13 @@ const MILESTONES = {
             can() { return player.rank.gte(this.req()) },
         },
         5: {
-            desc() { return 'Multiples mass upgrades 2-3 effects based on ranks.' },
+            desc() { return `Multiples mass upgrades 2-3 effects based on ranks (x${format(this.effect(),2)}).` },
             req() { return E(6) },
             can() { return player.rank.gte(this.req()) },
+            effect() {
+                let eff = player.rank.add(1).pow(MILESTONES.rank[9].can()?9/20:2/5)
+                return eff
+            },
         },
         6: {
             desc() { return 'Quadruples mass gain.' },
@@ -1031,9 +1180,13 @@ const MILESTONES = {
             can() { return player.tier.gte(this.req()) },
         },
         2: {
-            desc() { return 'Mass upgrade 2 level boost this effect.' },
+            desc() { return `Mass upgrade 2 level boost this effect (x${format(this.effect(),0)} to level).` },
             req() { return E(3) },
             can() { return player.tier.gte(this.req()) },
+            effect() {
+                let eff = FUNCS.hasUpgrade('mass', 2).div(5).add(1)
+                return eff
+            },
         },
         3: {
             desc() { return 'Reduce mass upgrade 1-3 cost scaled by 20%.' },
@@ -1041,9 +1194,13 @@ const MILESTONES = {
             can() { return player.tier.gte(this.req()) },
         },
         4: {
-            desc() { return 'Gain free mass upgrade 3 levels based on ranks.' },
+            desc() { return `Gain free mass upgrade 3 levels based on ranks (+${format(this.effect(),0)} to level).` },
             req() { return E(5) },
             can() { return player.tier.gte(this.req()) },
+            effect() {
+                let eff = player.rank.pow(0.525)
+                return eff
+            },
         },
         5: {
             desc() { return 'Unlock fourth mass upgrade, called "cheaper".' },
@@ -1069,9 +1226,13 @@ const MILESTONES = {
             can() { return player.tetr.gte(this.req()) },
         },
         2: {
-            desc() { return 'Mass upgrade 3 level boost this effect.' },
+            desc() { return `Mass upgrade 3 level boost this effect (+${format(this.effect(),0)} to level).` },
             req() { return E(3) },
             can() { return player.tetr.gte(this.req()) },
+            effect() {
+                let eff = FUNCS.hasUpgrade('mass', 3).div(5).add(1)
+                return eff
+            },
         },
         3: {
             desc() { return 'Reduce mass upgrade 4 cost scaled by 15%.' },
@@ -1094,9 +1255,13 @@ const MILESTONES = {
             can() { return player.tetr.gte(this.req()) },
         },
         7: {
-            desc() { return 'Increase Pentogen upgrade Power based on Tetrs.' },
+            desc() { return `Increase Pentogen upgrade Power based on Tetrs (+${format(this.effect().mul(100),1)}%).` },
             req() { return E(15) },
             can() { return player.tetr.gte(this.req()) },
+            effect() {
+                let eff = player.tetr.div(75)
+                return eff
+            },
         },
     },
     dark_matter: {
@@ -1112,9 +1277,13 @@ const MILESTONES = {
             can() { return player.black_hole.total_dm.gte(this.req()) },
         },
         3: {
-            desc() { return `Gain free mass upgrade 1-2 based on total Dark Matters.` },
+            desc() { return `Gain free mass upgrade 1-2 based on total Dark Matters (+${format(this.effect(),0)} to level).` },
             req() { return E(15) },
             can() { return player.black_hole.total_dm.gte(this.req()) },
+            effect() {
+                let eff = player.black_hole.total_dm.mul(5)
+                return eff
+            },
         },
         4: {
             desc() { return `Unlocks new Rage Powers upgrades. Keep RP upgrades on reset.` },
@@ -1133,7 +1302,7 @@ const MILESTONES = {
         },
     },
     multiverse: {
-        rows: 6,
+        rows: 7,
         0: {
             desc() { return 'Tsss secret.' },
             req() { return E(1) },
@@ -1167,6 +1336,11 @@ const MILESTONES = {
         6: {
             desc() { return 'Unlock “Pentogen” (alternative version (universe) of Jacorb’s game “Distance Incremental” - Pathogen).' },
             req() { return E(19) },
+            can() { return player.multiverse.number.gte(this.req()) },
+        },
+        7: {
+            desc() { return 'Unlock more Grid upgrades. Keep Anti-Dark Matter upgrades on reset.' },
+            req() { return E(22) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
     },
