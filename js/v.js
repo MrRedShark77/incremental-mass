@@ -7,6 +7,7 @@ function loadVue() {
 			player,
 			format,
 			formatMass,
+			romanize,
 			FUNCS,
 			UPGS,
 			MILESTONES,

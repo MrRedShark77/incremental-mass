@@ -13,6 +13,10 @@ const TABS = {
         {id: 'Multiverse', unl() { return player.unlocked.includes('multiverse') }, style: 'chroma_tab'},
     ],
     2: {
+        'Upgrades': [
+            {id: 'Mass', unl() { return true }, style: 'normal_tab'},
+            {id: 'Ex-Mass', unl() { return MILESTONES.multiverse[8].can() }, style: 'normal_tab'},
+        ],
         'Black Hole': [
             {id: 'Dark Matters Milestone', unl() { return true }, style: 'normal_tab'},
             {id: 'Black Hole Extractor', unl() { return MILESTONES.dark_matter[1].can() }, style: 'normal_tab'},
@@ -49,6 +53,7 @@ const FUNCS = {
         if (player.unlocked.includes('rage_powers')) gain = gain.mul(FUNCS.gains.rage_powers.effect().mul)
         if (FUNCS.hasBuyed('pp', 1)) gain = gain.mul(UPGS.pp[1].effect())
         if (MILESTONES.rank[4].can()) gain = gain.pow(1.25)
+        if (MILESTONES.tetr[8].can()) gain = gain.pow(1.1)
         if (player.black_hole.bh_activated) gain = gain.pow(1/3)
         if (FUNCS.penaltyMass().gt(1)) gain = gain.div(FUNCS.penaltyMass())
         return gain
@@ -97,7 +102,8 @@ const FUNCS = {
         can() { return player.rank.gte(this.req()) },
         reset() {
             if (this.can()) {
-                player.tier = player.tier.add(1)
+                if (MILESTONES.multiverse[7].can()) { if (this.bulk().add(1).gt(player.tier)) player.tier = this.bulk().add(1) }
+                else player.tier = player.tier.add(1)
                 this.doReset('tier')
             }
         },
@@ -106,7 +112,12 @@ const FUNCS = {
                 player.rank = E(1)
                 FUNCS.rank.doReset()
             }
-        }
+        },
+        bulk() {
+            let exp = E(2)
+            if (MILESTONES.tetr[1].can()) exp = exp.mul(0.9)
+            return player.rank.pow(E(1).div(exp)).sub(1).floor()
+        },
     },
     tetr: {
         req() {
@@ -185,6 +196,11 @@ const FUNCS = {
         if (MILESTONES.tetr[7].can()) gain = gain.add(MILESTONES.tetr[7].effect())
         return gain
     },
+    getExMass() {
+        if (!MILESTONES.multiverse[8].can()) return E(0)
+        let gain = player.mass.add(1).log10()
+        return gain
+    },
     gains: {
         rage_powers: {
             points(){
@@ -234,6 +250,7 @@ const FUNCS = {
         black_hole: {
             points(){
                 let gain = player.rage_powers.pow(1/5).sub(10).max(0)
+                if (player.upgs.gp.includes(52)) gain = player.rage_powers.pow(0.3).sub(10).max(0)
                 if (player.unlocked.includes('antidark_matters')) gain = gain.mul(FUNCS.gains.antidark_matters.effect().mul)
                 if (player.achs.includes(61)) gain = gain.mul(2)
                 return gain.floor()
@@ -250,7 +267,7 @@ const FUNCS = {
             },
             doReset(msg){
                 player.rage_powers = E(0)
-                if (!(msg == 'bh' && MILESTONES.dark_matter[4].can())) if (!(msg == 'adm' && MILESTONES.multiverse[5].can())) player.upgs.rage_powers = []
+                if (!(msg == 'bh' && MILESTONES.dark_matter[4].can())) if (!(msg == 'adm' && MILESTONES.multiverse[5].can())) if (!(msg == 'mul' && MILESTONES.multiverse[7].can())) player.upgs.rage_powers = []
                 player.gears = E(0)
                 FUNCS.gains.rage_powers.doReset()
             },
@@ -333,27 +350,29 @@ const FUNCS = {
         reset() {
             if (this.can()) if (confirm('You wanted to perform to enter new Multiverse? Resets all previous features (except achievements). Are you ready?')) {
                 player.multiverse.number = player.multiverse.number.add(1)
-                this.doReset()
+                this.doReset('mul')
             }
         },
         doReset(msg) {
             player.black_hole.dm = E(0)
             player.black_hole.total_dm = E(0)
-            if (MILESTONES.multiverse[2].can()) player.black_hole.total_dm = E(640)
-            player.black_hole.adm = E(0)
-            if (MILESTONES.multiverse[2].can()) player.black_hole.adm = E(200)
+            if (MILESTONES.multiverse[2].can() && msg == 'mul') player.black_hole.total_dm = E(640)
+            if (!(MILESTONES.multiverse[7].can() && msg == 'mul')) {
+                player.black_hole.adm = E(0)
+                if (MILESTONES.multiverse[2].can() && msg == 'mul') player.black_hole.adm = E(200)
+                player.upgs.adm = []
+            }
             player.upgs.dm = {}
-            player.upgs.adm = []
             player.black_hole.stored_mass = E(0)
             player.black_hole.bh_activated = false
-            if (!MILESTONES.multiverse[4].can()) {
+            if (!(MILESTONES.multiverse[4].can() && msg == 'mul')) {
                 player.upgs.gears = []
                 player.automators.mass = false
                 player.automators.rank = false
                 player.automators.tier = false
                 player.automators.tetr = false
             }
-            FUNCS.gains.black_hole.doReset()
+            FUNCS.gains.black_hole.doReset(msg)
         },
     },
     msgs: {
@@ -376,7 +395,7 @@ const UPGS = {
         if (UPGS[name].parent != undefined) can = player[UPGS[name].parent][UPGS[name].res].gte(cost) && (UPGS[name].type == 'normal'?!player.upgs[name].includes(id):true)
         else can = player[UPGS[name].res].gte(cost) && (UPGS[name].type == 'normal'?!player.upgs[name].includes(id):true)
         if (can) {
-            if (UPGS[name].parent != undefined) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cost)
+            if (UPGS[name].parent != undefined) {if (!(name == 'dm' && MILESTONES.multiverse[8].can())) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cost)}
             else if (!(name == 'mass' && MILESTONES.multiverse[1].can())) player[UPGS[name].res] = player[UPGS[name].res].sub(cost)
             switch(UPGS[name].type) {
                 case 'normal':
@@ -396,7 +415,8 @@ const UPGS = {
         if (UPGS[name].parent != undefined) can = player[UPGS[name].parent][UPGS[name].res].gte(cst)
         else can = player[UPGS[name].res].gte(cst)
         if (can && bulk.add(1).gt(FUNCS.hasUpgrade(name, id))) {
-            if (UPGS[name].parent != undefined) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cst)
+
+            if (UPGS[name].parent != undefined) {if (!(name == 'dm' && MILESTONES.multiverse[8].can())) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cst)}
             else if (!(name == 'mass' && MILESTONES.multiverse[1].can())) player[UPGS[name].res] = player[UPGS[name].res].sub(cst)
             if (player.upgs[name][id] == undefined) player.upgs[name][id] = E(0)
             player.upgs[name][id] = bulk.add(1)
@@ -482,6 +502,7 @@ const UPGS = {
                 if (lvl.gte(2000)) lvl = lvl.sub(2000).div(1.15).add(2000)
                 if (lvl.gte(6900)) lvl = lvl.sub(6900).div(1.15).add(6900)
                 if (lvl.gte(22500)) lvl = lvl.sub(22500).div(1.15).add(22500)
+                if (lvl.gte(100000)) lvl = lvl.sub(100000).pow(0.6).add(100000)
                 if (player.upgs.gp.includes(42)) lvl = lvl.add(UPGS.gp[42].effect())
                 if (MILESTONES.tetr[2].can()) lvl = lvl.mul(1.2)
                 if (MILESTONES.tetr[4].can()) lvl = lvl.mul(1.05)
@@ -501,7 +522,8 @@ const UPGS = {
                 let lvl = FUNCS.hasUpgrade('mass', 4)
                 if (player.upgs.gp.includes(42)) lvl = lvl.add(UPGS.gp[42].effect())
                 if (MILESTONES.tetr[4].can()) lvl = lvl.mul(1.05)
-                if (MILESTONES.tetr[6].can()) lvl = lvl.mul(1.05)
+                if (MILESTONES.tetr[6].can()) lvl = lvl.mul(1.1)
+                if (UPGS.ex_mass[1].unl()) lvl = lvl.pow(UPGS.ex_mass[1].effect())
                 return E(1.75).pow(lvl)
             },
             effDesc(x=this.effect()) { return '/'+format(x,0) },
@@ -586,6 +608,7 @@ const UPGS = {
             effect() {
                 let eff = player.rage_powers.add(1).log10().div(6.5).add(.1)
                 if (player.upgs.gp.includes(31)) eff = eff.mul(UPGS.gp[31].effect())
+                if (UPGS.ex_mass[2].unl()) eff = eff.mul(UPGS.ex_mass[2].effect())
                 return eff
             },
             effDesc(x=this.effect()) { return '-'+format(x) },
@@ -609,6 +632,7 @@ const UPGS = {
             effect() {
                 let eff = player.black_hole.stored_mass.add(1).log10().mul(1.1).div(100).add(1)
                 if (eff.gte(1.5)) eff = eff.sub(.5).pow(1/3).add(.5)
+                if (eff.gte(10)) eff = eff.sub(10).pow(1/3).add(10)
                 return eff
             },
             effDesc(x=this.effect()) { return format(x.sub(1).mul(100))+'%' },
@@ -669,6 +693,8 @@ const UPGS = {
                 
                 let eff = lvl.add(1).pow(1.4/4)
                 if (eff.gte(1000)) eff = eff.sub(1000).div(4).add(1000)
+                if (eff.gte(10000)) eff = eff.sub(10000).div(16).add(10000)
+                if (eff.gte(100000)) eff = eff.sub(100000).div(64).add(100000)
                 return eff
             },
             effDesc(x=this.effect()) { return '^'+format(x, 2) },
@@ -821,14 +847,9 @@ const UPGS = {
         },
         25: {
             unl() { return MILESTONES.multiverse[7].can() },
-            desc() { return 'Placeholder.' },
-            cost() { return E(1/0) },
+            desc() { return 'Pentogen Upgrade 1 & 5 are stronger.' },
+            cost() { return E(1e25) },
             can() { return player.multiverse.gp.gte(this.cost()) },
-            effect() {
-                let eff = E(1)
-                return eff
-            },
-            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
 
         31: {
@@ -946,25 +967,15 @@ const UPGS = {
         },
         52: {
             unl() { return MILESTONES.multiverse[7].can() },
-            desc() { return 'Placeholder.' },
-            cost() { return E(1/0) },
+            desc() { return 'DM gain formula is better. [x^0.2 → x^0.3]' },
+            cost() { return E(1e20) },
             can() { return player.multiverse.gp.gte(this.cost()) },
-            effect() {
-                let eff = E(1)
-                return eff
-            },
-            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
         53: {
             unl() { return MILESTONES.multiverse[7].can() },
-            desc() { return 'Placeholder.' },
-            cost() { return E(1/0) },
+            desc() { return 'Unlock Auto-buy DM upgrades.' },
+            cost() { return E(1e29) },
             can() { return player.multiverse.gp.gte(this.cost()) },
-            effect() {
-                let eff = E(1)
-                return eff
-            },
-            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
         54: {
             unl() { return MILESTONES.multiverse[7].can() },
@@ -1007,6 +1018,7 @@ const UPGS = {
             effect() {
                 let lvl = FUNCS.hasUpgrade('pp', 1)
                 lvl = lvl.mul(FUNCS.getPentogenPower())
+                if (player.upgs.gp.includes(25)) lvl = lvl.pow(3)
                 return E(100).pow(lvl)
             },
             effDesc(x=this.effect()) { return 'x'+format(x, 2) },
@@ -1071,7 +1083,8 @@ const UPGS = {
             effect() {
                 let lvl = FUNCS.hasUpgrade('pp', 5)
                 lvl = lvl.mul(FUNCS.getPentogenPower())
-                return player.mass.add(1).pow(0.001).pow(lvl.pow(1/4))
+                if (player.upgs.gp.includes(25)) lvl = lvl.pow(4)
+                return player.mass.add(1).pow(0.001).pow(lvl.pow(1/3))
             },
             effDesc(x=this.effect()) { return 'x'+format(x, 2) },
             bulk() { return player.multiverse.pp.div(1e5).add(1).logBase(7.5).floor() },
@@ -1087,10 +1100,36 @@ const UPGS = {
             effect() {
                 let lvl = FUNCS.hasUpgrade('pp', 6)
                 lvl = lvl.mul(FUNCS.getPentogenPower())
-                return player.multiverse.pp.add(1).log10().add(1).pow(lvl.pow(0.4)).sub(1).floor()
+
+                let eff = player.multiverse.pp.add(1).log10().add(1).pow(lvl.pow(0.4)).sub(1)
+                let soft = FUNCS.hasUpgrade('dm', 1).max(FUNCS.hasUpgrade('dm', 2))
+                if (eff.gte(soft)) eff = eff.sub(soft).pow(1/2).add(soft)
+                return eff.floor()
             },
             effDesc(x=this.effect()) { return '+'+format(x, 0) },
             bulk() { return player.multiverse.pp.div(5e5).add(1).logBase(10).floor() },
+        },
+    },
+    ex_mass: {
+        cols: 2,
+
+        1: {
+            unl() { return MILESTONES.multiverse[8].can() },
+            desc() { return `Mass Upgrade 4 effect is stronger by` },
+            effect() {
+                let eff = FUNCS.getExMass().add(1).pow(0.025)
+                return eff
+            },
+            effDesc(x=this.effect()) { return `^${format(x)}` }
+        },
+        2: {
+            unl() { return FUNCS.getExMass().gte(11000000) },
+            desc() { return `Multiples RP upgrade 3 effects by` },
+            effect() {
+                let eff = FUNCS.getExMass().add(1).pow(0.2)
+                return eff
+            },
+            effDesc(x=this.effect()) { return `x${format(x)}` }
         },
     },
 }
@@ -1219,7 +1258,7 @@ const MILESTONES = {
         },
     },
     tetr: {
-        rows: 7,
+        rows: 8,
         1: {
             desc() { return 'Reduce tier reqirements by 10%.' },
             req() { return E(2) },
@@ -1250,7 +1289,7 @@ const MILESTONES = {
             can() { return player.tetr.gte(this.req()) },
         },
         6: {
-            desc() { return 'Mass upgrade 4 are x1.05 stronger.' },
+            desc() { return 'Mass upgrade 4 are x1.1 stronger.' },
             req() { return E(10) },
             can() { return player.tetr.gte(this.req()) },
         },
@@ -1260,8 +1299,14 @@ const MILESTONES = {
             can() { return player.tetr.gte(this.req()) },
             effect() {
                 let eff = player.tetr.div(75)
+                if (eff.gte(.25)) eff = eff.sub(.25).div(1.5).add(.25)
                 return eff
             },
+        },
+        8: {
+            desc() { return 'Raise mass gain by 1.1.' },
+            req() { return E(27) },
+            can() { return player.tetr.gte(this.req()) },
         },
     },
     dark_matter: {
@@ -1302,7 +1347,7 @@ const MILESTONES = {
         },
     },
     multiverse: {
-        rows: 7,
+        rows: 8,
         0: {
             desc() { return 'Tsss secret.' },
             req() { return E(1) },
@@ -1339,8 +1384,13 @@ const MILESTONES = {
             can() { return player.multiverse.number.gte(this.req()) },
         },
         7: {
-            desc() { return 'Unlock more Grid upgrades. Keep Anti-Dark Matter upgrades on reset.' },
+            desc() { return 'Unlock more Grid upgrades. Keep Rage Powers upgrades, Anti-Dark Matters on reset. You can bulk tier.' },
             req() { return E(22) },
+            can() { return player.multiverse.number.gte(this.req()) },
+        },
+        8: {
+            desc() { return 'Unlock Ex-Mass. DM upgrades no longer spend your DM.' },
+            req() { return E(32) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
     },
@@ -1533,6 +1583,21 @@ function formatMass(ex) {
     if (ex.gte(1e6)) return format(ex.div(1e6), 1) + ' tonne'
     if (ex.gte(1e3)) return format(ex.div(1e3), 1) + ' kg'
     return format(ex, 1) + ' g'
+}
+
+function romanize(num) {
+    num = Number(num)
+    if (isNaN(num))
+        return NaN;
+    var digits = String(+num).split(""),
+        key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
+               "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
+               "","I","II","III","IV","V","VI","VII","VIII","IX"],
+        roman = "",
+        i = 3;
+    while (i--)
+        roman = (key[+digits.pop() + (i * 10)] || "") + roman;
+    return Array(+digits.join("") + 1).join("M") + roman;
 }
 
 setInterval(loop, 50)

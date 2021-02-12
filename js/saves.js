@@ -36,6 +36,7 @@ function calc(dt) {
         player.black_hole.total_dm = player.black_hole.total_dm.add(gain)
     }
     if (MILESTONES.multiverse[6].can()) player.multiverse.pp = player.multiverse.pp.add(FUNCS.gains.pp().mul(dt/1000))
+    if (player.upgs.gp.includes(53) && player.automators.dm_upgs) UPGS.buyMax('dm')
 }
 
 function wipe() {
@@ -64,6 +65,7 @@ function wipe() {
             rank: false,
             tier: false,
             tetr: false,
+            dm_upgs: false,
         },
         gears: E(0),
         rage_powers: E(0),
@@ -134,6 +136,7 @@ function loadPlayer(load) {
         p_auto.rank = l_auto.rank
         p_auto.tier = l_auto.tier
         if (l_auto.tetr != undefined) p_auto.tetr = l_auto.tetr
+        if (l_auto.dm_upgs != undefined) p_auto.dm_upgs = l_auto.dm_upgs
     }
 
     if (load.black_hole != undefined) {

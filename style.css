@@ -24,9 +24,16 @@ button {
 	cursor: pointer;
 }
 
-h1, h2 {
+h1 {
     display: inline;
-    font-size: 20px;
+	font-weight: normal;
+    font-size: 35px;
+}
+
+h2 {
+	display: inline;
+	font-weight: normal;
+    font-size: 25px;
 }
 
 .table_center {
