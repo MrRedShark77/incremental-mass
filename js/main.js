@@ -1380,7 +1380,7 @@ const MILESTONES = {
         },
         6: {
             desc() { return 'Unlock “Pentogen” (alternative version (universe) of Jacorb’s game “Distance Incremental” - Pathogen).' },
-            req() { return E(19) },
+            req() { return E(18) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
         7: {
