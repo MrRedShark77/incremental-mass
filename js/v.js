@@ -8,9 +8,11 @@ function loadVue() {
 			format,
 			formatMass,
 			romanize,
+			greekAlp,
 			FUNCS,
 			UPGS,
 			MILESTONES,
+			CHALGREEK,
 			TABS,
 			ACHIEVEMENTS,
         }

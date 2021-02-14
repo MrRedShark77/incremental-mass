@@ -7,7 +7,9 @@
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="js/ExpantaNum.js"></script>
     <script src="js/saves.js"></script>
+    
     <script src="js/main.js"></script>
+    <script src="js/challengreek.js"></script>
     <script src="js/v.js"></script>
 
     <title>Incremental Mass</title>
@@ -39,23 +41,21 @@
                     <button v-on:click="FUNCS.chTabs(1, TABS[2]['Upgrades'].indexOf(x))" v-bind:class="{[x.style]: true}">{{ x.id }}</button>
                 </div>
             </div><br><div v-if='player.tabs[1] == 0'>
-                <div style="height: 100px">
-                    Rank {{ format(player.rank, 0) }} <button onclick="FUNCS.rank.reset()" v-bind:class="{closed: !FUNCS.rank.can()}">Reach max capacity for new rank</button><br>
-                    Tier {{ format(player.tier, 0) }} <button onclick="FUNCS.tier.reset()" v-bind:class="{closed: !FUNCS.tier.can()}">Reach Rank {{ format(FUNCS.tier.req(), 0) }} for new tier</button><br>
-                    <span v-if="MILESTONES.multiverse[1].can()">Tetr {{ format(player.tetr, 0) }} <button onclick="FUNCS.tetr.reset()" v-bind:class="{closed: !FUNCS.tetr.can()}">Reach Tier {{ format(FUNCS.tetr.req(), 0) }} for new tetr</button><br><br></span>
+                <div style="height: 150px" class="table_center">
+                    <div v-for='x in 4' v-if="FUNCS[FUNCS.config.smallLayerName[x-1]].unl()" v-on:click="FUNCS[FUNCS.config.smallLayerName[x-1]].reset()" class="upgrade rank" v-bind:class="{closed: !FUNCS[FUNCS.config.smallLayerName[x-1]].can()}">
+                        {{ FUNCS.config.LayerName[x-1] }} {{ format(player[FUNCS.config.smallLayerName[x-1]], 0) }}<br><br><br>
+                        Reach <span v-if="x == 1">max capacity</span><span v-if="x > 1">{{ FUNCS.config.LayerName[x-2] }} {{ format(FUNCS[FUNCS.config.smallLayerName[x-1]].req(), 0) }}</span>
+                        <br>for new {{ FUNCS.config.smallLayerName[x-1] }}
+                    </div>
                 </div>
                 <div class="table_center" v-if="player.rank.gte(1)">
                     <div style="width: 40%;">
                         <h2>Milestones</h2><br>
-                        <div v-for='x in MILESTONES.rank.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.rank[x].can()">
-                            Rank {{ format(MILESTONES.rank[x].req(), 0) }}: {{ MILESTONES.rank[x].desc() }}
-                        </div><br>
-                        <div v-for='x in MILESTONES.tier.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.tier[x].can()">
-                            Tier {{ format(MILESTONES.tier[x].req(), 0) }}: {{ MILESTONES.tier[x].desc() }}
-                        </div><br>
-                        <div v-for='x in MILESTONES.tetr.rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES.tetr[x].can()">
-                            Tetr {{ format(MILESTONES.tetr[x].req(), 0) }}: {{ MILESTONES.tetr[x].desc() }}
-                        </div><br>
+                        <div v-for='n in 4'>
+                            <div v-for='x in MILESTONES[FUNCS.config.smallLayerName[n-1]].rows' style="border: solid 3px white; text-align: left;" v-if="MILESTONES[FUNCS.config.smallLayerName[n-1]][x].can()">
+                                {{ FUNCS.config.LayerName[n-1] }} {{ format(MILESTONES[FUNCS.config.smallLayerName[n-1]][x].req(), 0) }}: {{ MILESTONES[FUNCS.config.smallLayerName[n-1]][x].desc() }}
+                            </div><br>
+                        </div>
                     </div><div style="width: 40%;">
                         <h2>Upgrades</h2><br>
                         <div class="table_center">
@@ -106,6 +106,7 @@
             <div v-if="player.upgs.gears.includes(12)">Auto-rank: <input type="checkbox" v-model="player.automators.rank"></div>
             <div v-if="player.upgs.gears.includes(13)">Auto-tier: <input type="checkbox" v-model="player.automators.tier"></div>
             <div v-if="player.upgs.gp.includes(12)">Auto-tetr: <input type="checkbox" v-model="player.automators.tetr"></div>
+            <div v-if="MILESTONES.multiverse[9].can()">Auto-pent: <input type="checkbox" v-model="player.automators.pent"></div>
         </div><div v-if='player.tabs[0] == 4'>
             <button class="prestige_reset rage_powers_tab" onclick="FUNCS.gains.rage_powers.reset()" v-bind:class="{closed: !FUNCS.gains.rage_powers.canReset()}">Reset for<br><b>{{ format(FUNCS.gains.rage_powers.points(), 0) }}</b><br>Rage Powers</button><br><br>
             You have <h2>{{ format(player.rage_powers, 0) }}</h2> Rage Powers, which multiples mass gain based on unspent mass: log10(x+1)^{{ format(FUNCS.gains.rage_powers.effect().pow) }}<br>
@@ -227,6 +228,21 @@
                             Level {{ format(FUNCS.hasUpgrade('pp', x), 0) }}
                             <span v-if="UPGS.pp[x].effect"><br>Currently: {{ UPGS.pp[x].effDesc() }}</span>
                         </div>
+                    </div>
+                </div>
+            </div><div v-if='player.tabs[1] == 3'>
+                While in any of this challenge, Pentogen upgrades 1 & 5 will no longer give effects.<br>But any challenge hasn’t the goal, can set the mass in any challenge, will give effects.
+                <br><br>
+                <div style="height: 30px;">
+                    <button v-if='player.multiverse.chalGreek.choosed != 0' onclick="CHALGREEK.exit()">Exit Challenge {{ greekAlp(player.multiverse.chalGreek.choosed) }}</button>
+                </div>
+                <br><div class="table_center">
+                    <div v-for='x in CHALGREEK.cols' class="chalGreek" v-on:click='CHALGREEK.run(x)' v-bind:class="{unlocked: CHALGREEK.ch() == x}">
+                        <div style="height: 50px;">Challenge <h2>{{ greekAlp(x) }}</h2></div>
+                        <div style="height: 100px;">{{ CHALGREEK[x].desc() }}</div>
+                        Mass gained: {{ formatMass(CHALGREEK.getMass(x)) }}<br>
+                        Effect: {{ CHALGREEK[x].reward() }}<br>
+                        Currently: {{ CHALGREEK[x].effDesc() }}
                     </div>
                 </div>
             </div>

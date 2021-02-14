@@ -26,13 +26,16 @@ const TABS = {
             {id: 'Multiverse Milestone', unl() { return true }, style: 'normal_tab'},
             {id: 'Grid Upgrades', unl() { return MILESTONES.multiverse[2].can() }, style: 'normal_tab'},
             {id: 'Pentogen', unl() { return MILESTONES.multiverse[6].can() }, style: 'pentogen_tab'},
+            {id: 'ChallenGreek', unl() { return player.unlocked.includes('challengreek') }, style: 'normal_tab'},
         ],
     },
 }
 
 const FUNCS = {
     config: {
-        maxMilestones: 5,
+        maxMilestones: 6,
+        smallLayerName: ['rank', 'tier', 'tetr', 'pent'],
+        LayerName: ['Rank', 'Tier', 'Tetr', 'Pent'],
     },
     gainMass() {
         let softcap = E(100)
@@ -51,7 +54,8 @@ const FUNCS = {
         if (MILESTONES.rank[8].can()) gain = gain.mul(5)
         if (MILESTONES.rank[12].can()) gain = gain.mul(MILESTONES.rank[12].effect().pow(player.rank.sub(39).max(0).pow(player.rank.gte(softcap)?(0.969):1)))
         if (player.unlocked.includes('rage_powers')) gain = gain.mul(FUNCS.gains.rage_powers.effect().mul)
-        if (FUNCS.hasBuyed('pp', 1)) gain = gain.mul(UPGS.pp[1].effect())
+        if (FUNCS.hasBuyed('pp', 1) && CHALGREEK.ch() == 0) gain = gain.mul(UPGS.pp[1].effect())
+        if (CHALGREEK[1].unl()) gain = gain.mul(CHALGREEK[1].effect())
         if (MILESTONES.rank[4].can()) gain = gain.pow(1.25)
         if (MILESTONES.tetr[8].can()) gain = gain.pow(1.1)
         if (player.black_hole.bh_activated) gain = gain.pow(1/3)
@@ -73,10 +77,11 @@ const FUNCS = {
         if (player.achs.includes(51)) gain = gain.pow(2)
         return gain
     },
-    getMaxMass() { return E(10).pow(player.rank.sub(1).sub(player.upgs.rage_powers.includes(13)?UPGS.rage_powers[13].effect():0).max(0).pow(1.5)
+    getMaxMass() { return E(10).pow(player.rank.sub(1).sub(CHALGREEK[4].unl()?CHALGREEK[4].effect():0).sub(player.upgs.rage_powers.includes(13)?UPGS.rage_powers[13].effect():0).max(0).pow((CHALGREEK.ch() == 1)?2:1.5)
         .mul(MILESTONES.tier[1].can()?0.8:1)
         .add(1)) },
     rank: {
+        unl() { return true },
         can() { return player.mass.gte(FUNCS.getMaxMass()) },
         reset() {
             if (this.can()) {
@@ -91,13 +96,14 @@ const FUNCS = {
                 player.upgs.mass = {}
             }
         },
-        bulk() { return player.mass.add(1).log10().sub(1).div(MILESTONES.tier[1].can()?0.8:1).max(0).pow(1/1.5).add(player.upgs.rage_powers.includes(13)?UPGS.rage_powers[13].effect():0).add(1).floor() }
+        bulk() { return player.mass.add(1).log10().sub(1).div(MILESTONES.tier[1].can()?0.8:1).max(0).pow(1/((CHALGREEK.ch() == 1)?2:1.5)).add(player.upgs.rage_powers.includes(13)?UPGS.rage_powers[13].effect():0).add(CHALGREEK[4].unl()?CHALGREEK[4].effect():0).add(1).floor() }
     },
     tier: {
+        unl() { return CHALGREEK.ch() != 4 },
         req() {
             let exp = E(2)
             if (MILESTONES.tetr[1].can()) exp = exp.mul(0.9)
-            return player.tier.add(1).pow(exp).floor()
+            return player.tier.sub(UPGS.ex_mass[3].unl()?UPGS.ex_mass[3].effect():0).add(1).max(0).pow(exp).floor()
         },
         can() { return player.rank.gte(this.req()) },
         reset() {
@@ -116,18 +122,22 @@ const FUNCS = {
         bulk() {
             let exp = E(2)
             if (MILESTONES.tetr[1].can()) exp = exp.mul(0.9)
-            return player.rank.pow(E(1).div(exp)).sub(1).floor()
+            return player.rank.pow(E(1).div(exp)).sub(1).add(UPGS.ex_mass[3].unl()?UPGS.ex_mass[3].effect():0).floor()
         },
     },
     tetr: {
+        unl() { return MILESTONES.multiverse[1].can() && CHALGREEK.ch() != 4 },
         req() {
+            let exp = E(2)
+            if (MILESTONES.pent[1].can()) exp = exp.mul(0.95)
             let num = player.tetr.add(1)
-            return num.pow(2).add(num).div(2).add(2).floor()
+            return num.pow(exp).div(2).add(1).floor()
         },
         can() { return player.tier.gte(this.req()) },
         reset() {
             if (this.can()) {
-                player.tetr = player.tetr.add(1)
+                if (MILESTONES.multiverse[9].can()) { if (this.bulk().add(1).gt(player.tetr)) player.tetr = this.bulk().add(1) }
+                else player.tetr = player.tetr.add(1)
                 this.doReset('tetr')
             }
         },
@@ -136,6 +146,29 @@ const FUNCS = {
                 player.tier = E(1)
                 FUNCS.tier.doReset()
             }
+        },
+        bulk() {
+            let exp = E(2)
+            if (MILESTONES.pent[1].can()) exp = exp.mul(0.95)
+            return player.tier.sub(1).mul(2).max(0).pow(E(1).div(exp)).floor()
+        },
+    },
+    pent: {
+        unl() { return player.upgs.gp.includes(54) && CHALGREEK.ch() != 4 },
+        req() {
+            let num = player.pent.add(1)
+            return num.pow(3)
+        },
+        can() { return player.tetr.gte(this.req()) },
+        reset() {
+            if (this.can()) {
+                player.pent = player.pent.add(1)
+                this.doReset('pent')
+            }
+        },
+        doReset(msg) {
+            player.tetr = E(1)
+            FUNCS.tetr.doReset()
         }
     },
     hasUpgrade(type, id) {
@@ -182,13 +215,21 @@ const FUNCS = {
             dis() { return formatMass(this.req()) },
             desc: `Multiverse`,
         },
+        'challengreek': {
+            req() { return E(42) },
+            can() { return player.multiverse.number.gte(this.req()) },
+            dis() { return 'Multiverse #'+format(this.req()) },
+            desc: `ChallenGreek`,
+        },
     },
     getMassPower() {
         let gain = E(1)
         if (player.unlocked.includes('black_hole')) gain = gain.mul(FUNCS.gains.black_hole.effect().pow)
         if (player.upgs.gp.includes(14)) gain = gain.mul(UPGS.gp[14].effect())
-        if (FUNCS.hasBuyed('pp', 5)) gain = gain.mul(UPGS.pp[5].effect())
+        if (FUNCS.hasBuyed('pp', 5) && CHALGREEK.ch() == 0) gain = gain.mul(UPGS.pp[5].effect())
+        if (CHALGREEK[3].unl()) gain = gain.mul(CHALGREEK[3].effect())
         if (player.upgs.gp.includes(22)) gain = gain.pow(UPGS.gp[22].effect())
+        if (CHALGREEK.ch() == 3) gain = gain.pow(0.0625)
         return gain
     },
     getPentogenPower() {
@@ -215,6 +256,7 @@ const FUNCS = {
                 if (player.unlocked.includes('black_hole')) gain = gain.mul(FUNCS.gains.black_hole.effect().mul)
                 if (player.upgs.gp.includes(13)) gain = gain.mul(UPGS.gp[13].effect())
                 if (FUNCS.hasBuyed('pp', 2)) gain = gain.mul(UPGS.pp[2].effect())
+                if (CHALGREEK[2].unl()) gain = gain.mul(CHALGREEK[2].effect())
                 if (player.upgs.rage_powers.includes(23)) gain = gain.pow(1.25)
                 if (player.black_hole.bh_activated) gain = gain.pow(1/3)
                 return gain.floor()
@@ -243,8 +285,8 @@ const FUNCS = {
                 }
             },
             doReset(msg){
-                player.tetr = E(1)
-                FUNCS.tetr.doReset()
+                player.pent = E(1)
+                FUNCS.pent.doReset()
             },
         },
         black_hole: {
@@ -337,6 +379,7 @@ const FUNCS = {
             let gain = player.rank.sub(1).pow(1/2)
             if (FUNCS.hasBuyed('pp', 4)) gain = gain.mul(UPGS.pp[4].effect())
             if (player.upgs.gp.includes(15)) gain = gain.mul(UPGS.gp[15].effect())
+            if (MILESTONES.tier[8].can()) gain = gain.pow(1.25)
             return gain
         },
     },
@@ -371,6 +414,7 @@ const FUNCS = {
                 player.automators.rank = false
                 player.automators.tier = false
                 player.automators.tetr = false
+                player.automators.pent = false
             }
             FUNCS.gains.black_hole.doReset(msg)
         },
@@ -503,6 +547,7 @@ const UPGS = {
                 if (lvl.gte(6900)) lvl = lvl.sub(6900).div(1.15).add(6900)
                 if (lvl.gte(22500)) lvl = lvl.sub(22500).div(1.15).add(22500)
                 if (lvl.gte(100000)) lvl = lvl.sub(100000).pow(0.6).add(100000)
+                if (lvl.gte(1300000)) lvl = lvl.sub(1300000).pow(0.6).add(1300000)
                 if (player.upgs.gp.includes(42)) lvl = lvl.add(UPGS.gp[42].effect())
                 if (MILESTONES.tetr[2].can()) lvl = lvl.mul(1.2)
                 if (MILESTONES.tetr[4].can()) lvl = lvl.mul(1.05)
@@ -523,6 +568,7 @@ const UPGS = {
                 if (player.upgs.gp.includes(42)) lvl = lvl.add(UPGS.gp[42].effect())
                 if (MILESTONES.tetr[4].can()) lvl = lvl.mul(1.05)
                 if (MILESTONES.tetr[6].can()) lvl = lvl.mul(1.1)
+                if (MILESTONES.pent[2].can()) lvl = lvl.add(MILESTONES.pent[2].effect())
                 if (UPGS.ex_mass[1].unl()) lvl = lvl.pow(UPGS.ex_mass[1].effect())
                 return E(1.75).pow(lvl)
             },
@@ -695,6 +741,9 @@ const UPGS = {
                 if (eff.gte(1000)) eff = eff.sub(1000).div(4).add(1000)
                 if (eff.gte(10000)) eff = eff.sub(10000).div(16).add(10000)
                 if (eff.gte(100000)) eff = eff.sub(100000).div(64).add(100000)
+                if (eff.gte(150000)) eff = eff.sub(150000).pow(0.38).add(150000)
+                if (eff.gte(300000)) eff = eff.sub(300000).pow(0.3).add(300000)
+                if (CHALGREEK.ch() == 2) eff = E(0)
                 return eff
             },
             effDesc(x=this.effect()) { return '^'+format(x, 2) },
@@ -888,14 +937,9 @@ const UPGS = {
         },
         35: {
             unl() { return MILESTONES.multiverse[7].can() },
-            desc() { return 'Placeholder.' },
-            cost() { return E(1/0) },
+            desc() { return 'Gain 10% of Anti-Dark Matters gain per second.' },
+            cost() { return E(1e38) },
             can() { return player.multiverse.gp.gte(this.cost()) },
-            effect() {
-                let eff = E(1)
-                return eff
-            },
-            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
 
         41: {
@@ -979,14 +1023,9 @@ const UPGS = {
         },
         54: {
             unl() { return MILESTONES.multiverse[7].can() },
-            desc() { return 'Placeholder.' },
-            cost() { return E(1/0) },
+            desc() { return 'Unlock Pent.' },
+            cost() { return E(1e55) },
             can() { return player.multiverse.gp.gte(this.cost()) },
-            effect() {
-                let eff = E(1)
-                return eff
-            },
-            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
         55: {
             unl() { return MILESTONES.multiverse[7].can() },
@@ -1066,6 +1105,7 @@ const UPGS = {
             can() { return player.multiverse.pp.gte(this.cost()) },
             effect() {
                 let lvl = FUNCS.hasUpgrade('pp', 4)
+                if (lvl.gte(40)) lvl = lvl.sub(40).pow(2/5).add(40)
                 lvl = lvl.mul(FUNCS.getPentogenPower())
                 return E(2).pow(lvl)
             },
@@ -1104,6 +1144,8 @@ const UPGS = {
                 let eff = player.multiverse.pp.add(1).log10().add(1).pow(lvl.pow(0.4)).sub(1)
                 let soft = FUNCS.hasUpgrade('dm', 1).max(FUNCS.hasUpgrade('dm', 2))
                 if (eff.gte(soft)) eff = eff.sub(soft).pow(1/2).add(soft)
+                soft = soft.mul(2)
+                if (eff.gte(soft)) eff = eff.sub(soft).pow(1/2).add(soft)
                 return eff.floor()
             },
             effDesc(x=this.effect()) { return '+'+format(x, 0) },
@@ -1111,7 +1153,7 @@ const UPGS = {
         },
     },
     ex_mass: {
-        cols: 2,
+        cols: 3,
 
         1: {
             unl() { return MILESTONES.multiverse[8].can() },
@@ -1130,6 +1172,15 @@ const UPGS = {
                 return eff
             },
             effDesc(x=this.effect()) { return `x${format(x)}` }
+        },
+        3: {
+            unl() { return FUNCS.getExMass().gte(33000000) },
+            desc() { return `Substracts tier requirement by` },
+            effect() {
+                let eff = FUNCS.getExMass().pow(0.25).mul(2)
+                return eff
+            },
+            effDesc(x=this.effect()) { return `-${format(x)}` }
         },
     },
 }
@@ -1212,7 +1263,7 @@ const MILESTONES = {
         },
     },
     tier: {
-        rows: 7,
+        rows: 8,
         1: {
             desc() { return 'Reduce rank reqirements by 20%.' },
             req() { return E(2) },
@@ -1254,6 +1305,11 @@ const MILESTONES = {
         7: {
             desc() { return 'Increase Rank 40 softcap based on tiers (starts at 80).' },
             req() { return E(80) },
+            can() { return player.tier.gte(this.req()) },
+        },
+        8: {
+            desc() { return 'Raise PP gain by 1.25.' },
+            req() { return E(512) },
             can() { return player.tier.gte(this.req()) },
         },
     },
@@ -1309,6 +1365,23 @@ const MILESTONES = {
             can() { return player.tetr.gte(this.req()) },
         },
     },
+    pent: {
+        rows: 2,
+        1: {
+            desc() { return 'Reduce tetr reqirements by 5%.' },
+            req() { return E(3) },
+            can() { return player.pent.gte(this.req()) },
+        },
+        2: {
+            desc() { return `Mass upgrade 4 level boost this effect (+${format(this.effect(),0)} to level).` },
+            req() { return E(4) },
+            can() { return player.pent.gte(this.req()) },
+            effect() {
+                let eff = FUNCS.hasUpgrade('mass', 4).div(5).add(1)
+                return eff
+            },
+        },
+    },
     dark_matter: {
         rows: 6,
         1: {
@@ -1347,7 +1420,7 @@ const MILESTONES = {
         },
     },
     multiverse: {
-        rows: 8,
+        rows: 9,
         0: {
             desc() { return 'Tsss secret.' },
             req() { return E(1) },
@@ -1391,6 +1464,11 @@ const MILESTONES = {
         8: {
             desc() { return 'Unlock Ex-Mass. DM upgrades no longer spend your DM.' },
             req() { return E(32) },
+            can() { return player.multiverse.number.gte(this.req()) },
+        },
+        9: {
+            desc() { return 'Unlock auto-Pent, you can bulk Tetr.' },
+            req() { return E(44) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
     },
@@ -1598,6 +1676,11 @@ function romanize(num) {
     while (i--)
         roman = (key[+digits.pop() + (i * 10)] || "") + roman;
     return Array(+digits.join("") + 1).join("M") + roman;
+}
+
+function greekAlp(x) {
+    let str = 'αβγδεζηθικλμνξοπρςτυφχψω'
+    return str[Number(x-1)]
 }
 
 setInterval(loop, 50)

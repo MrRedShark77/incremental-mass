@@ -24,9 +24,10 @@ function calc(dt) {
         }
         UPGS.buy('mass', x)
     }
-    if (player.automators.rank && player.upgs.gears.includes(12)) FUNCS.rank.reset()
-    if (player.automators.tier && player.upgs.gears.includes(13)) FUNCS.tier.reset()
-    if (player.automators.tetr && player.upgs.gp.includes(12)) FUNCS.tetr.reset()
+    if (player.automators.rank && player.upgs.gears.includes(12) && FUNCS.rank.unl()) FUNCS.rank.reset()
+    if (player.automators.tier && player.upgs.gears.includes(13) && FUNCS.tier.unl()) FUNCS.tier.reset()
+    if (player.automators.tetr && player.upgs.gp.includes(12) && FUNCS.tetr.unl()) FUNCS.tetr.reset()
+    if (player.automators.pent && MILESTONES.multiverse[9].can() && FUNCS.pent.unl()) FUNCS.pent.reset()
     if (MILESTONES.dark_matter[1].can()) player.black_hole.stored_mass = player.black_hole.stored_mass.add(FUNCS.gains.black_hole.storedGain().mul(dt/1000).mul(player.upgs.gp.includes(32)?FUNCS.getMassPower():1))
     if (MILESTONES.dark_matter[5].can()) player.rage_powers = player.rage_powers.add(FUNCS.gains.rage_powers.points().mul(dt/10000))
     if (MILESTONES.multiverse[2].can()) player.multiverse.gp = player.multiverse.gp.add(FUNCS.gains.gp().mul(dt/1000))
@@ -37,6 +38,7 @@ function calc(dt) {
     }
     if (MILESTONES.multiverse[6].can()) player.multiverse.pp = player.multiverse.pp.add(FUNCS.gains.pp().mul(dt/1000))
     if (player.upgs.gp.includes(53) && player.automators.dm_upgs) UPGS.buyMax('dm')
+    if (player.upgs.gp.includes(35)) player.black_hole.adm = player.black_hole.adm.add(FUNCS.gains.antidark_matters.points().mul(dt/10000))
 }
 
 function wipe() {
@@ -45,6 +47,7 @@ function wipe() {
         rank: E(1),
         tier: E(1),
         tetr: E(1),
+        pent: E(1),
         upgs: {
             mass: {},
             gears: [],
@@ -65,6 +68,7 @@ function wipe() {
             rank: false,
             tier: false,
             tetr: false,
+            pent: false,
             dm_upgs: false,
         },
         gears: E(0),
@@ -81,6 +85,10 @@ function wipe() {
             number: E(1),
             gp: E(0),
             pp: E(0),
+            chalGreek: {
+                choosed: 0,
+                chals: {},
+            },
         },
     }
 }
@@ -120,6 +128,7 @@ function loadPlayer(load) {
     player.rank = ex(load.rank)
     player.tier = ex(load.tier)
     if (load.tetr != undefined) player.tetr = ex(load.tetr)
+    if (load.pent != undefined) player.pent = ex(load.pent)
 
     let p_upg = player.upgs, l_upg = load.upgs;
     for (let i = 0; i < Object.keys(l_upg.mass).length; i++) p_upg.mass[Object.keys(l_upg.mass)[i]] = ex(l_upg.mass[Object.keys(l_upg.mass)[i]])
@@ -136,6 +145,7 @@ function loadPlayer(load) {
         p_auto.rank = l_auto.rank
         p_auto.tier = l_auto.tier
         if (l_auto.tetr != undefined) p_auto.tetr = l_auto.tetr
+        if (l_auto.pent != undefined) p_auto.pent = l_auto.pent
         if (l_auto.dm_upgs != undefined) p_auto.dm_upgs = l_auto.dm_upgs
     }
 
@@ -153,6 +163,10 @@ function loadPlayer(load) {
         pm.number = ex(lm.number)
         if (lm.gp != undefined) pm.gp = ex(lm.gp)
         if (lm.pp != undefined) pm.pp = ex(lm.pp)
+        if (lm.chalGreek != undefined) {
+            pm.chalGreek.choosed = lm.chalGreek.choosed
+            for (let x = 1; x <= Object.keys(lm.chalGreek.chals).length; x++) pm.chalGreek.chals[x] = ex(lm.chalGreek.chals[x])
+        }
     }
 
     if (load.unlocked != undefined) player.unlocked = load.unlocked
