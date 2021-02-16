@@ -96,10 +96,10 @@ const FUNCS = {
                 player.upgs.mass = {}
             }
         },
-        bulk() { return player.mass.add(1).log10().sub(1).div(MILESTONES.tier[1].can()?0.8:1).max(0).pow(1/((CHALGREEK.ch() == 1)?2:1.5)).add(player.upgs.rage_powers.includes(13)?UPGS.rage_powers[13].effect():0).add(CHALGREEK[4].unl()?CHALGREEK[4].effect():0).add(1).floor() }
+        bulk() { return player.mass.add(1).log10().sub(1).div(MILESTONES.tier[1].can()?0.8:1).max(0).pow(1/((CHALGREEK.ch() == 1 || CHALGREEK.ch() == 5)?2:1.5)).add(player.upgs.rage_powers.includes(13)?UPGS.rage_powers[13].effect():0).add(CHALGREEK[4].unl()?CHALGREEK[4].effect():0).add(1).floor() }
     },
     tier: {
-        unl() { return CHALGREEK.ch() != 4 },
+        unl() { return !(CHALGREEK.ch() == 4 || CHALGREEK.ch() == 5) },
         req() {
             let exp = E(2)
             if (MILESTONES.tetr[1].can()) exp = exp.mul(0.9)
@@ -126,7 +126,7 @@ const FUNCS = {
         },
     },
     tetr: {
-        unl() { return MILESTONES.multiverse[1].can() && CHALGREEK.ch() != 4 },
+        unl() { return MILESTONES.multiverse[1].can() && !(CHALGREEK.ch() == 4 || CHALGREEK.ch() == 5) },
         req() {
             let exp = E(2)
             if (MILESTONES.pent[1].can()) exp = exp.mul(0.95)
@@ -154,7 +154,7 @@ const FUNCS = {
         },
     },
     pent: {
-        unl() { return player.upgs.gp.includes(54) && CHALGREEK.ch() != 4 },
+        unl() { return player.upgs.gp.includes(54) && !(CHALGREEK.ch() == 4 || CHALGREEK.ch() == 5) },
         req() {
             let num = player.pent.add(1)
             return num.pow(3)
@@ -229,7 +229,7 @@ const FUNCS = {
         if (FUNCS.hasBuyed('pp', 5) && CHALGREEK.ch() == 0) gain = gain.mul(UPGS.pp[5].effect())
         if (CHALGREEK[3].unl()) gain = gain.mul(CHALGREEK[3].effect())
         if (player.upgs.gp.includes(22)) gain = gain.pow(UPGS.gp[22].effect())
-        if (CHALGREEK.ch() == 3) gain = gain.pow(0.0625)
+        if (CHALGREEK.ch() == 3 || CHALGREEK.ch() == 5) gain = gain.pow(0.0625)
         return gain
     },
     getPentogenPower() {
@@ -240,7 +240,9 @@ const FUNCS = {
     getExMass() {
         if (!MILESTONES.multiverse[8].can()) return E(0)
         let gain = player.mass.add(1).log10()
-        return gain
+        let mul = E(1)
+        if (player.upgs.gp.includes(45)) for (let x = 1; x <= UPGS.EMM.cols; x++) mul = mul.add(UPGS.EMM[x].effect())
+        return gain.mul(mul)
     },
     gains: {
         rage_powers: {
@@ -295,6 +297,7 @@ const FUNCS = {
                 if (player.upgs.gp.includes(52)) gain = player.rage_powers.pow(0.3).sub(10).max(0)
                 if (player.unlocked.includes('antidark_matters')) gain = gain.mul(FUNCS.gains.antidark_matters.effect().mul)
                 if (player.achs.includes(61)) gain = gain.mul(2)
+                if (UPGS.ex_mass[4].unl()) gain = gain.pow(UPGS.ex_mass[4].effect())
                 return gain.floor()
             },
             canReset(){ return this.points().gte(1) },
@@ -309,7 +312,7 @@ const FUNCS = {
             },
             doReset(msg){
                 player.rage_powers = E(0)
-                if (!(msg == 'bh' && MILESTONES.dark_matter[4].can())) if (!(msg == 'adm' && MILESTONES.multiverse[5].can())) if (!(msg == 'mul' && MILESTONES.multiverse[7].can())) player.upgs.rage_powers = []
+                if (!(msg == 'bh' && MILESTONES.dark_matter[4].can())) if (!(msg == 'adm' && MILESTONES.multiverse[5].can())) if (!(msg == 'mul' && MILESTONES.multiverse[7].can())) if (!(MILESTONES.multiverse[10].can() && msg == 'chalgreek')) player.upgs.rage_powers = []
                 player.gears = E(0)
                 FUNCS.gains.rage_powers.doReset()
             },
@@ -379,6 +382,7 @@ const FUNCS = {
             let gain = player.rank.sub(1).pow(1/2)
             if (FUNCS.hasBuyed('pp', 4)) gain = gain.mul(UPGS.pp[4].effect())
             if (player.upgs.gp.includes(15)) gain = gain.mul(UPGS.gp[15].effect())
+            if (UPGS.ex_mass[5].unl()) gain = gain.mul(UPGS.ex_mass[5].effect())
             if (MILESTONES.tier[8].can()) gain = gain.pow(1.25)
             return gain
         },
@@ -399,16 +403,17 @@ const FUNCS = {
         doReset(msg) {
             player.black_hole.dm = E(0)
             player.black_hole.total_dm = E(0)
-            if (MILESTONES.multiverse[2].can() && msg == 'mul') player.black_hole.total_dm = E(640)
+            if ((MILESTONES.multiverse[2].can() && msg == 'mul') || (MILESTONES.multiverse[10].can() && msg == 'chalgreek')) player.black_hole.total_dm = E(640)
             if (!(MILESTONES.multiverse[7].can() && msg == 'mul')) {
                 player.black_hole.adm = E(0)
                 if (MILESTONES.multiverse[2].can() && msg == 'mul') player.black_hole.adm = E(200)
-                player.upgs.adm = []
+                if (!(MILESTONES.multiverse[10].can() && msg == 'chalgreek')) player.upgs.adm = []
             }
+            
             player.upgs.dm = {}
             player.black_hole.stored_mass = E(0)
             player.black_hole.bh_activated = false
-            if (!(MILESTONES.multiverse[4].can() && msg == 'mul')) {
+            if (!(MILESTONES.multiverse[4].can() && msg == 'mul')) if (!(MILESTONES.multiverse[10].can() && msg == 'chalgreek')) {
                 player.upgs.gears = []
                 player.automators.mass = false
                 player.automators.rank = false
@@ -439,7 +444,7 @@ const UPGS = {
         if (UPGS[name].parent != undefined) can = player[UPGS[name].parent][UPGS[name].res].gte(cost) && (UPGS[name].type == 'normal'?!player.upgs[name].includes(id):true)
         else can = player[UPGS[name].res].gte(cost) && (UPGS[name].type == 'normal'?!player.upgs[name].includes(id):true)
         if (can) {
-            if (UPGS[name].parent != undefined) {if (!(name == 'dm' && MILESTONES.multiverse[8].can())) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cost)}
+            if (UPGS[name].parent != undefined) {if (!(name == 'dm' && MILESTONES.multiverse[8].can())) if (!(name == 'pp' && player.upgs.gp.includes(55))) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cost)}
             else if (!(name == 'mass' && MILESTONES.multiverse[1].can())) player[UPGS[name].res] = player[UPGS[name].res].sub(cost)
             switch(UPGS[name].type) {
                 case 'normal':
@@ -460,7 +465,7 @@ const UPGS = {
         else can = player[UPGS[name].res].gte(cst)
         if (can && bulk.add(1).gt(FUNCS.hasUpgrade(name, id))) {
 
-            if (UPGS[name].parent != undefined) {if (!(name == 'dm' && MILESTONES.multiverse[8].can())) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cst)}
+            if (UPGS[name].parent != undefined) {if (!(name == 'dm' && MILESTONES.multiverse[8].can())) if (!(name == 'pp' && player.upgs.gp.includes(55))) player[UPGS[name].parent][UPGS[name].res] = player[UPGS[name].parent][UPGS[name].res].sub(cst)}
             else if (!(name == 'mass' && MILESTONES.multiverse[1].can())) player[UPGS[name].res] = player[UPGS[name].res].sub(cst)
             if (player.upgs[name][id] == undefined) player.upgs[name][id] = E(0)
             player.upgs[name][id] = bulk.add(1)
@@ -742,8 +747,9 @@ const UPGS = {
                 if (eff.gte(10000)) eff = eff.sub(10000).div(16).add(10000)
                 if (eff.gte(100000)) eff = eff.sub(100000).div(64).add(100000)
                 if (eff.gte(150000)) eff = eff.sub(150000).pow(0.38).add(150000)
-                if (eff.gte(300000)) eff = eff.sub(300000).pow(0.3).add(300000)
-                if (CHALGREEK.ch() == 2) eff = E(0)
+                if (eff.gte(300000)) eff = eff.sub(300000).pow(0.5).add(300000)
+                if (eff.gte(2000000)) eff = eff.sub(2000000).pow(0.5).add(2000000)
+                if (CHALGREEK.ch() == 2 || CHALGREEK.ch() == 5) eff = E(0)
                 return eff
             },
             effDesc(x=this.effect()) { return '^'+format(x, 2) },
@@ -988,14 +994,9 @@ const UPGS = {
         },
         45: {
             unl() { return MILESTONES.multiverse[7].can() },
-            desc() { return 'Placeholder.' },
-            cost() { return E(1/0) },
+            desc() { return 'Unlock Ex-Mass multiplier.' },
+            cost() { return E(1e79) },
             can() { return player.multiverse.gp.gte(this.cost()) },
-            effect() {
-                let eff = E(1)
-                return eff
-            },
-            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
 
         51: {
@@ -1029,14 +1030,9 @@ const UPGS = {
         },
         55: {
             unl() { return MILESTONES.multiverse[7].can() },
-            desc() { return 'Placeholder.' },
-            cost() { return E(1/0) },
+            desc() { return 'Unlock Challenge Epsilon. Pentogen Upgrades no longer buys PP.' },
+            cost() { return E(1e88) },
             can() { return player.multiverse.gp.gte(this.cost()) },
-            effect() {
-                let eff = E(1)
-                return eff
-            },
-            effDesc(x=this.effect()) { return 'x'+format(x, 3) },
         },
     },
     pp: {
@@ -1105,7 +1101,7 @@ const UPGS = {
             can() { return player.multiverse.pp.gte(this.cost()) },
             effect() {
                 let lvl = FUNCS.hasUpgrade('pp', 4)
-                if (lvl.gte(40)) lvl = lvl.sub(40).pow(2/5).add(40)
+                if (lvl.gte(40)) lvl = lvl.sub(40).pow(MILESTONES.pent[3].can()?0.6:0.4).add(40)
                 lvl = lvl.mul(FUNCS.getPentogenPower())
                 return E(2).pow(lvl)
             },
@@ -1122,9 +1118,13 @@ const UPGS = {
             can() { return player.multiverse.pp.gte(this.cost()) },
             effect() {
                 let lvl = FUNCS.hasUpgrade('pp', 5)
+                if (lvl.gte(40)) lvl = lvl.sub(40).pow(0.8).add(40)
                 lvl = lvl.mul(FUNCS.getPentogenPower())
                 if (player.upgs.gp.includes(25)) lvl = lvl.pow(4)
-                return player.mass.add(1).pow(0.001).pow(lvl.pow(1/3))
+
+                let eff = player.mass.add(1).pow(0.001).pow(lvl.pow(1/3))
+                if (eff.gte('e5e9')) eff = eff.div('e5e9').pow(1/3).mul('e5e9')
+                return eff
             },
             effDesc(x=this.effect()) { return 'x'+format(x, 2) },
             bulk() { return player.multiverse.pp.div(1e5).add(1).logBase(7.5).floor() },
@@ -1153,7 +1153,7 @@ const UPGS = {
         },
     },
     ex_mass: {
-        cols: 3,
+        cols: 5,
 
         1: {
             unl() { return MILESTONES.multiverse[8].can() },
@@ -1181,6 +1181,66 @@ const UPGS = {
                 return eff
             },
             effDesc(x=this.effect()) { return `-${format(x)}` }
+        },
+        4: {
+            unl() { return FUNCS.getExMass().gte(4.725e9) },
+            desc() { return `Raises DM gain by` },
+            effect() {
+                let eff = FUNCS.getExMass().add(1).pow(1/400)
+                return eff
+            },
+            effDesc(x=this.effect()) { return `^${format(x)}` }
+        },
+        5: {
+            unl() { return FUNCS.getExMass().gte(4e11) },
+            desc() { return `Multiples PP gain by` },
+            effect() {
+                let eff = FUNCS.getExMass().add(1).pow(0.1)
+                return eff
+            },
+            effDesc(x=this.effect()) { return `x${format(x)}` }
+        },
+    },
+    EMM: {
+        count(x) {
+            if (player.multiverse.EMM[x] != undefined) return player.multiverse.EMM[x]
+            else return E(0)
+        },
+        buy(x) {
+            if (this[x].can()) {
+                if (player.multiverse.EMM[x] == undefined) player.multiverse.EMM[x] = E(0)
+                player.multiverse.EMM[x] = player.multiverse.EMM[x].add(1)
+            }
+        },
+
+        cols: 4,
+        1: {
+            name: 'RP',
+            cost() { return E(1e50).pow(UPGS.EMM.count(1)).mul(1e100) },
+            costDesc(x=this.cost()) { return format(x, 0) },
+            can() { return player.rage_powers.gte(this.cost()) },
+            effect() { return E(0.25).mul(UPGS.EMM.count(1)) },
+        },
+        2: {
+            name: 'DM',
+            cost() { return E(1e25).pow(UPGS.EMM.count(2)).mul(1e25) },
+            costDesc(x=this.cost()) { return format(x, 0) },
+            can() { return player.black_hole.dm.gte(this.cost()) },
+            effect() { return E(0.25).mul(UPGS.EMM.count(2)) },
+        },
+        3: {
+            name: 'PP',
+            cost() { return E(1e10).pow(UPGS.EMM.count(3)).mul(1e10) },
+            costDesc(x=this.cost()) { return format(x, 0) },
+            can() { return player.multiverse.pp.gte(this.cost()) },
+            effect() { return E(0.25).mul(UPGS.EMM.count(3)) },
+        },
+        4: {
+            name: 'in Black Hole',
+            cost() { return E('e100000000').pow(UPGS.EMM.count(4).add(1)).mul(1.5e56) },
+            costDesc(x=this.cost()) { return formatMass(x) },
+            can() { return player.black_hole.stored_mass.gte(this.cost()) },
+            effect() { return E(0.25).mul(UPGS.EMM.count(4)) },
         },
     },
 }
@@ -1366,7 +1426,7 @@ const MILESTONES = {
         },
     },
     pent: {
-        rows: 2,
+        rows: 3,
         1: {
             desc() { return 'Reduce tetr reqirements by 5%.' },
             req() { return E(3) },
@@ -1380,6 +1440,11 @@ const MILESTONES = {
                 let eff = FUNCS.hasUpgrade('mass', 4).div(5).add(1)
                 return eff
             },
+        },
+        3: {
+            desc() { return 'Pentogen upgrades 4 softcap are weaker.' },
+            req() { return E(5) },
+            can() { return player.pent.gte(this.req()) },
         },
     },
     dark_matter: {
@@ -1420,7 +1485,7 @@ const MILESTONES = {
         },
     },
     multiverse: {
-        rows: 9,
+        rows: 10,
         0: {
             desc() { return 'Tsss secret.' },
             req() { return E(1) },
@@ -1469,6 +1534,11 @@ const MILESTONES = {
         9: {
             desc() { return 'Unlock auto-Pent, you can bulk Tetr.' },
             req() { return E(44) },
+            can() { return player.multiverse.number.gte(this.req()) },
+        },
+        10: {
+            desc() { return 'Keep Gear, RP & ADM upgrades on entering any challenge in ChallenGreek.' },
+            req() { return E(49) },
             can() { return player.multiverse.number.gte(this.req()) },
         },
     },
@@ -1652,7 +1722,8 @@ function format(ex, acc=3) {
 
 function formatMass(ex) {
     ex = E(ex)
-    if (ex.isInfinite()) return '∞ uni'
+    if (ex.isInfinite()) return '∞ mlt'
+    if (ex.gte(E(1.5e56).mul('ee9'))) return format(ex.div(1.5e56).log10().div(1e9), 4) + ' mlt'
     if (ex.gte(1.5e56)) return format(ex.div(1.5e56), 1) + ' uni'
     if (ex.gte(2.9835e45)) return format(ex.div(2.9835e45), 1) + ' MMWG'
     if (ex.gte(1.989e33)) return format(ex.div(1.989e33), 1) + ' M☉'

@@ -71,7 +71,16 @@
                     </div>
                 </div>
             </div><div v-if='player.tabs[1] == 1'>
-                You have <h1>{{ format(FUNCS.getExMass(), 0) }}</h1> of ex-mass.<br><br><br>
+                You have <h1>{{ format(FUNCS.getExMass(), 0) }}</h1> of ex-mass.<br><br>
+                <div class="table_center" v-if='player.upgs.gp.includes(45)'>
+                    <div v-for='x in UPGS.EMM.cols' class="upgrade" v-bind:class="{closed: !UPGS.EMM[x].can()}" v-on:click="UPGS.EMM.buy(x)">
+                        <div style="height: 70px;">
+                            Increase Ex-Mass multiplier by x0.25
+                        </div>
+                        Cost: {{ UPGS.EMM[x].costDesc() }} {{ UPGS.EMM[x].name }}<br>
+                        Level {{ format(UPGS.EMM.count(x), 0) }}
+                    </div>
+                </div><br>
                 <div class="table_center">
                     <div v-for='x in UPGS.ex_mass.cols' v-if="UPGS.ex_mass[x].unl()" style="width: 350px; height: 150px;">
                         <b>Ex-Mass Boost {{ romanize(x) }}</b><br><br>
@@ -237,7 +246,7 @@
                     <button v-if='player.multiverse.chalGreek.choosed != 0' onclick="CHALGREEK.exit()">Exit Challenge {{ greekAlp(player.multiverse.chalGreek.choosed) }}</button>
                 </div>
                 <br><div class="table_center">
-                    <div v-for='x in CHALGREEK.cols' class="chalGreek" v-on:click='CHALGREEK.run(x)' v-bind:class="{unlocked: CHALGREEK.ch() == x}">
+                    <div v-for='x in CHALGREEK.cols' v-if='CHALGREEK[x].unl()' class="chalGreek" v-on:click='CHALGREEK.run(x)' v-bind:class="{unlocked: CHALGREEK.ch() == x}">
                         <div style="height: 50px;">Challenge <h2>{{ greekAlp(x) }}</h2></div>
                         <div style="height: 100px;">{{ CHALGREEK[x].desc() }}</div>
                         Mass gained: {{ formatMass(CHALGREEK.getMass(x)) }}<br>

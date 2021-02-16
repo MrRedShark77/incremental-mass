@@ -89,6 +89,7 @@ function wipe() {
                 choosed: 0,
                 chals: {},
             },
+            EMM: {},
         },
     }
 }
@@ -167,6 +168,7 @@ function loadPlayer(load) {
             pm.chalGreek.choosed = lm.chalGreek.choosed
             for (let x = 1; x <= Object.keys(lm.chalGreek.chals).length; x++) pm.chalGreek.chals[x] = ex(lm.chalGreek.chals[x])
         }
+        if (lm.EMM != undefined) for (let x = 1; x <= Object.keys(lm.EMM).length; x++) pm.EMM[x] = ex(lm.EMM[x])
     }
 
     if (load.unlocked != undefined) player.unlocked = load.unlocked
