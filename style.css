@@ -52,6 +52,7 @@ h2 {
     height: 140px;
     border: solid 3px white;
     cursor: pointer;
+    user-select: none;
 }
 
 .upgrade.gp {
